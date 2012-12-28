@@ -1,0 +1,5 @@
+Skyradar:
+
+SSID: skyradar0001
+Network: 169.254.0.0/16
+Skyradar unit: 169.254.1.18
