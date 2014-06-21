@@ -6,7 +6,6 @@
 
 from collections import namedtuple
 
-
 def _parseHeartbeat(msgBytes):
     """GDL90 message type 0x00"""
     assert len(msgBytes) == 7
@@ -177,7 +176,7 @@ def _signed16(data, littleEndian=False):
 
 
 def _thunkByte(c, mask=0xff, shift=0):
-    """extra an integer from a byte applying a mask and a bit shift
+    """extract an integer from a byte applying a mask and a bit shift
     @c character byte
     @mask the AND mask to get the desired bits
     @shift negative to shift right, positive to shift left, zero for no shift

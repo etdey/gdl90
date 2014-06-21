@@ -7,12 +7,15 @@ import datetime
 from collections import deque
 import messages
 from gdl90.fcs import crcCheck
+from messagesuat import messageUatToObject
+
 
 class Decoder(object):
     """GDL-90 data link interface decoder class"""
 
     def __init__(self):
         self.format = 'normal'
+        self.uatOutput = False
         self.inputBuffer = bytearray()
         self.messages = deque()
         self.parserSynchronized = False
@@ -173,7 +176,7 @@ class Decoder(object):
         if m.MsgType == 'Heartbeat':
             self.currtime += self.heartbeatInterval
             if self.format == 'normal':
-                print 'MSG00: s1=%02x, s2=%02x, ts=%d' % (m.StatusByte1, m.StatusByte2, m.TimeStamp)
+                print 'MSG00: s1=%02x, s2=%02x, ts=%02x' % (m.StatusByte1, m.StatusByte2, m.TimeStamp)
             elif self.format == 'plotflight':
                 self.altitudeAge += 1
         
@@ -199,6 +202,10 @@ class Decoder(object):
                 self.altitude = m.Altitude
                 self.altitudeAge = 0
         
+        elif m.MsgType == 'TrafficReport':
+            if self.format == 'normal':
+                print 'MSG20: %0.7f %0.7f %dkt %dfpm %dft %02ddeg' % (m.Latitude, m.Longitude, m.HVelocity, m.VVelocity, m.Altitude, m.TrackHeading)
+        
         elif m.MsgType == 'GpsTime':
             if not self.gpsTimeReceived:
                 self.gpsTimeReceived = True
@@ -212,6 +219,9 @@ class Decoder(object):
             
             if self.format == 'normal':
                 print 'MSG101: %02d:%02d UTC (waas = %s)' % (m.Hour, m.Minute, m.Waas)
+        
+        elif m.MsgType == 'UplinkData' and self.uatOutput == True:
+            messageUatToObject(m)
         
         return True
     

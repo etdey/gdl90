@@ -15,7 +15,8 @@ import gdl90.encoder
 import math
 
 # Default values for options
-DEF_SEND_ADDR="255.255.255.255"
+#DEF_SEND_ADDR="255.255.255.255"
+DEF_SEND_ADDR="10.1.1.255"
 DEF_SEND_PORT=43211
 
 LATLONG_TO_RADIANS = math.pi / 180.0
@@ -52,7 +53,7 @@ if __name__ == '__main__':
     print "Transmitting to %s:%s" % (DEF_SEND_ADDR, DEF_SEND_PORT)
     
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind(('', 0))
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
     packetTotal = 0

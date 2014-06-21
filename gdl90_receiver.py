@@ -95,6 +95,9 @@ def _receive(options):
     if options.plotflight:
         decoder.format = 'plotflight'
     
+    if options.uat:
+        decoder.uatOutput = True
+    
     if options.inputfile:
         useNetwork = False
         s = open(options.inputfile, "rb")
@@ -161,6 +164,7 @@ if __name__ == '__main__':
     group.add_option("--inputfile","-i", action="store", metavar="FILE", help="read from input file instead of network")
     group.add_option("--date", action="store", metavar="YYYY-MM-DD", help="UTC starting date for data (default=now)")
     group.add_option("--plotflight", action="store_true", help="output plotflight format")
+    group.add_option("--uat", action="store_true", help="output UAT messages")
     optParser.add_option_group(group)
 
     # do the option parsing

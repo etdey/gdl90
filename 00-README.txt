@@ -5,9 +5,9 @@ Sending raw GDL-90 data files to network:
 
 Converting raw GDL-90 to text import format for KML plotter:
 
-  ./gdl90_receiver.py -i skyradar.20120912.002 | egrep '^MSG10' | sed -e 's/^MSG10: /- /' > ../KML/PlotFlight/skyradar.trackxxx.txt
+  ./gdl90_receiver.py -i skyradar.20120912.002 | egrep '^MSG10:' | sed -e 's/^MSG10: /- /' > ../KML/PlotFlight/skyradar.trackxxx.txt
 
 
 New style with automatic time computations:
 
-  ./gdl90_receiver.py -i skyradar.20121028.001 --plotflight '16:05' > ../KML/PlotFlight/skyradar.track.20121028.001.txt
+  ./gdl90_receiver.py -i skyradar.20121028.001 --plotflight > ../KML/PlotFlight/skyradar.track.20121028.001.txt
