@@ -20,7 +20,7 @@ __created__ = "September 2012"
 __copyright__ = "Copyright (c) 2014 by Eric Dey"
 
 __date__ = "$Date$"
-__version__ = "1.1"
+__version__ = "1.2"
 __revision__ = "$Revision$"
 __lastChangedBy__ = "$LastChangedBy$"
 
@@ -29,7 +29,7 @@ import os, sys, time, datetime, re, optparse, socket, struct, threading
 import netifaces
 
 # Default values for options
-DEF_RECV_IFACE_NAME='wlan0'
+DEF_RECV_IFACE_NAME=''
 DEF_RECV_PORT=43211
 DEF_RECV_MAXSIZE=1500
 DEF_DATA_FLUSH_SECS=10
@@ -68,7 +68,10 @@ def _options_okay(options):
         errors = True
         print_error("Argument '--port' must between 1 and 65535")
     
-    if _getAddressByIfaceName(options.interface) is None:
+    if options.interface == '':
+        # this means use all interfaces
+        pass
+    elif _getAddressByIfaceName(options.interface) is None:
         errors = True
         print_error("Argument '--interface' is not a valid interface name")
     else:
@@ -79,6 +82,10 @@ def _options_okay(options):
             print_error("Receive interface does not have an IP address")
     
     if options.rebroadcast != "":
+        if options.interface == '':
+            errors = True
+            print_error("Argument '--interface' cannot by all when using --rebroadcast option") 
+        
         if _getAddressByIfaceName(options.rebroadcast) is None:
             print_error("Argument '--rebroadcast' is not a valid interface name; disabling rebroadcast")
             options.rebroadcast = ""
@@ -91,7 +98,6 @@ def _options_okay(options):
             except KeyError:
                 print_error("Rebroadcast interface does not have an IP address; disabling rebroadcast")
                 options.rebroadcast = ""
-
     
     return not errors
 
@@ -132,6 +138,9 @@ def _getAddressByIfaceName(ifname, broadcast=False):
     @return: IP address string or None if error
     """
     
+    if ifname == '':
+        return ''
+    
     if not ifname in netifaces.interfaces():
         return None
     
@@ -167,7 +176,6 @@ def _record(options):
     sockOut = None
     if options.rebroadcast != "":
         sockOut = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #sockOut.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sockOut.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sockOutSendToAddr = _getAddressByIfaceName(options.rebroadcast, broadcast=True)
         if options.verbose == True:
