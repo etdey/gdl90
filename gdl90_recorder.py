@@ -232,7 +232,7 @@ if __name__ == '__main__':
     #
     # Setup option parsing
     #
-    usageMsg = "usage: %s {requiredOptions} [otherOptions]" % (progName)
+    usageMsg = "usage: %s [options]" % (progName)
     versionMsg = "%s version %s (%s)" % (progName, progVersion, progDate)
     descriptionMsg = __progTitle__ + """ is a data receiver."""
     epilogMsg = """"""
