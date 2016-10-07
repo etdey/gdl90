@@ -53,6 +53,26 @@ class Encoder(object):
         a.append((num & 0x00ff00) >> 8)
         a.append(num & 0xff)
         return(a)
+
+
+    def _makeLatitude(self, latitude):
+        """convert a signed integer latitude to 2s complement ready for 24-bit packing"""
+        if latitude > 90.0:  latitude = 90.0
+        if latitude < -90.0:  latitude = -90.0
+        latitude = int(latitude * (0x800000 / 180.0))
+        if latitude < 0:
+            latitude = (0x1000000 + latitude) & 0xffffff  # 2s complement
+        return(latitude)
+
+
+    def _makeLongitude(self, longitude):
+        """convert a signed integer longitude to 2s complement ready for 24-bit packing"""
+        if longitude > 180.0:  longitude = 180.0
+        if longitude < -180.0:  longitude = -180.0
+        longitude = int(longitude * (0x800000 / 180.0))
+        if longitude < 0:
+            longitude = (0x1000000 + longitude) & 0xffffff  # 2s complement
+        return(longitude)
     
     
     def msgHeartbeat(self, st1=0x81, st2=0x00, ts=None, mc=0x0000):
@@ -93,19 +113,9 @@ class Encoder(object):
         
         msg.extend(self._pack24bit(address))
         
-        if latitude > 90.0:  latitude = 90.0
-        if latitude < -90.0:  latitude = -90.0
-        latitude = int(latitude * (0x800000 / 180.0))
-        if latitude < 0:
-            latitude = (0x1000000 + latitude) & 0xffffff  # 2s complement
-        msg.extend(self._pack24bit(latitude))
+        msg.extend(self._pack24bit(self._makeLatitude(latitude)))
         
-        if longitude > 180.0:  longitude = 180.0
-        if longitude < -180.0:  longitude = -180.0
-        longitude = int(longitude * (0x800000 / 180.0))
-        if longitude < 0:
-            longitude = (0x1000000 + longitude) & 0xffffff  # 2s complement
-        msg.extend(self._pack24bit(longitude))
+        msg.extend(self._pack24bit(self._makeLongitude(longitude)))
         
         altitude = (int(altitude) + 1000) / 25
         if altitude < 0:  altitude = 0
@@ -204,3 +214,28 @@ class Encoder(object):
         return(self._preparedMessage(msg))
     
     
+    def msgStratuxHeartbeat(self, st1=0x02, ver=1):
+        """message ID #204 for Stratux heartbeat"""
+        msg = bytearray(chr(0xcc))
+        
+        fmt = '>B'
+        data = st1 & 0x03  # lower two bits only
+        data += ((ver & 0x3f) << 2)  # lower 6 bits of version packed into upper 6 of data
+        msg.extend(struct.pack(fmt,data))
+        
+        return(self._preparedMessage(msg))
+    
+    
+    def msgSXHeartbeat(self, fv=0x0001, hv=0x0001, st1=0x02, st2=0x01, satLock=0, satConn=0, num978=0, num1090=0, rate978=0, rate1090=0, cpuTemp=0, towers=[]):
+        """message ID #29 for Hiltonsoftware SX heartbeat"""
+        
+        msg = bytearray(chr(0x1d))
+        fmt = '>ccBBLLHHBBHHHHHB'
+        msg.extend(struct.pack(fmt,'S','X',1,1,fv,hv,st1,st2,satLock,satConn,num978,num1090,rate978,rate1090,cpuTemp,len(towers)))
+
+        for tower in towers:
+            (lat, lon) = tower[0:2]
+            msg.extend(self._pack24bit(self._makeLatitude(lat)))
+            msg.extend(self._pack24bit(self._makeLongitude(lon)))
+        
+        return(self._preparedMessage(msg))
