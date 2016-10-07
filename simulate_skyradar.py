@@ -13,6 +13,7 @@ import time
 import socket
 import gdl90.encoder
 import math
+import os
 
 # Default values for options
 #DEF_SEND_ADDR="255.255.255.255"
@@ -49,8 +50,15 @@ def horizontal_speed(distance, seconds):
 
 if __name__ == '__main__':
     
+    if 'SEND_ADDR' in os.environ.keys():
+        destAddr = os.environ['SEND_ADDR']
+    else:
+        destAddr = DEF_SEND_ADDR
+
+    destPort = int(DEF_SEND_PORT)
+
     print "Simulating Skyradar unit."
-    print "Transmitting to %s:%s" % (DEF_SEND_ADDR, DEF_SEND_PORT)
+    print "Transmitting to %s:%s" % (destAddr, destPort)
     
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -102,29 +110,29 @@ if __name__ == '__main__':
         
         # Heartbeat Message
         buf = encoder.msgHeartbeat()
-        s.sendto(buf, (DEF_SEND_ADDR, DEF_SEND_PORT))
+        s.sendto(buf, (destAddr, destPort))
         packetTotal += 1
         
         # Ownership Report
         buf = encoder.msgOwnershipReport(latitude=latitude, longitude=longitude, altitude=altitude, hVelocity=groundspeed, vVelocity=verticalspeed, trackHeading=heading, callSign=callSign)
-        s.sendto(buf, (DEF_SEND_ADDR, DEF_SEND_PORT))
+        s.sendto(buf, (destAddr, destPort))
         packetTotal += 1
         
         # Ownership Geometric Altitude
         buf = encoder.msgOwnershipGeometricAltitude(altitude=altitude)
-        s.sendto(buf, (DEF_SEND_ADDR, DEF_SEND_PORT))
+        s.sendto(buf, (destAddr, destPort))
         packetTotal += 1
         
         # Traffic Reports
         for t in traffic:
             (tlat, tlong, talt, tspeed, tvspeed, thdg, tcall, taddr) = t
             buf = encoder.msgTrafficReport(latitude=tlat, longitude=tlong, altitude=talt, hVelocity=tspeed, vVelocity=tvspeed, trackHeading=thdg, callSign=tcall, address=taddr)
-            s.sendto(buf, (DEF_SEND_ADDR, DEF_SEND_PORT))
+            s.sendto(buf, (destAddr, destPort))
             packetTotal += 1
         
         # GPS Time, Custom 101 Message
         buf = encoder.msgGpsTime(count=packetTotal)
-        s.sendto(buf, (DEF_SEND_ADDR, DEF_SEND_PORT))
+        s.sendto(buf, (destAddr, destPort))
         packetTotal += 1
         
         # On-screen status output
