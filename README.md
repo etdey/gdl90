@@ -80,8 +80,13 @@ defined in the GDL 90 protocol. Since seconds information is not available when
 using the SkyRadar hardware, the decoding library self-corrects its internal
 estimation of the number of seconds past the minute as messages are received.
 
+Example usage:
+```
+$ ./gdl90_receiver.py -i skyradar.20121028.001 --plotflight > ../KML/PlotFlight/skyradar.track.20121028.001.txt
+```
 
-### Recorder
+
+## Recorder
 
 The recorder captures the raw data stream from an ADS-B device and saves it to
 a file. It is designed to be run within a device like the RaspberryPi attached
@@ -134,7 +139,7 @@ Options:
 ```
 
 
-### Sender
+## Sender
 
 The sender is useful for replaying a previously recorded data stream from an
 ADS-B hardware device. This can be used for testing an application or the
