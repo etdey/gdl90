@@ -204,7 +204,7 @@ class Decoder(object):
         
         elif m.MsgType == 'TrafficReport':
             if self.format == 'normal':
-                print 'MSG20: %0.7f %0.7f %dkt %dfpm %dft %02ddeg' % (m.Latitude, m.Longitude, m.HVelocity, m.VVelocity, m.Altitude, m.TrackHeading)
+                print 'MSG20: %s %0.7f %0.7f %dkt %dfpm %dft %02ddeg' % (m.CallSign, m.Latitude, m.Longitude, m.HVelocity, m.VVelocity, m.Altitude, m.TrackHeading)
         
         elif m.MsgType == 'GpsTime':
             if not self.gpsTimeReceived:
