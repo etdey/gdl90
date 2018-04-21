@@ -100,11 +100,16 @@ def _parseMessageType10and20(msgType, msgBytes):
     fields.append(vertVelo * 64) ;# vertical velocity
     
     trackIncrement = 360.0 / 256
-    fields.append(msgBytes[17] * trackIncrement) ;# track/heading
+    fields.append(msgBytes[17] * trackIncrement)  # track/heading, 0-358.6 degrees
     
     fields.append(msgBytes[18]) ;# emitter category
-    fields.append(str(msgBytes[19:27]).rstrip()) ;# call sign
-    fields.append(_thunkByte(msgBytes[27], 0xf0, -4)) ;# code
+
+    # call sign; if blank, change to "-"
+    callsign = str(msgBytes[19:27]).rstrip()  # call sign
+    if callsign == "": callsign ="-"
+    fields.append(callsign)
+
+    fields.append(_thunkByte(msgBytes[27], 0xf0, -4))  # emergency/priority code
     
     return fields
 
