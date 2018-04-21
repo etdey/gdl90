@@ -91,11 +91,19 @@ def _parseMessageType10and20(msgType, msgBytes):
     fields.append(_thunkByte(msgBytes[13], 0xf0, -4)) ;# NIC
     fields.append(_thunkByte(msgBytes[13], 0x0f)) ;# NACp
     
-    fields.append(_thunkByte(msgBytes[14], 0xff, 4) + _thunkByte(msgBytes[15], 0xf0, -4)) ;# horizontal velocity
+    # horizontal velocity, 12-bit unsigned value in knots
+    horzVelo = _thunkByte(msgBytes[14], 0xff, 4) + _thunkByte(msgBytes[15], 0xf0, -4)
+    if horzVelo == 0xfff:  # no hvelocity info available
+        horzVelo = 0
+    fields.append(horzVelo)
     
-    # 12-bit signed value of 64 fpm increments
+    # vertical velocity, 12-bit signed value of 64 fpm increments
     vertVelo = _thunkByte(msgBytes[15], 0x0f, 8) + _thunkByte(msgBytes[16])
-    if vertVelo > 2047:
+    if vertVelo == 0x800:   # no vvelocity info available
+        vertVelo = 0
+    elif (vertVelo >= 0x1ff and vertVelo <= 0x7ff) or (vertVelo >= 0x801 and vertVelo <= 0xe01):  # not used, invalid
+        vertVelo = 0
+    elif vertVelo > 2047:  # two's complement, negative values
         vertVelo -= 4096
     fields.append(vertVelo * 64) ;# vertical velocity
     
