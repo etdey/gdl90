@@ -13,7 +13,7 @@ def test_msg_0():
     print
 
 
-def test_msg_11():
+def test_msg_20():
     print "Message type 20:"
     data = bytearray([0x14, 0x00, 0xab, 0x45, 0x49, 0x1f, 0xef, 0x15,
                       0xa8, 0x89, 0x78, 0x0f, 0x09, 0xa9, 0x07, 0xb0,
@@ -26,4 +26,4 @@ def test_msg_11():
 
 if __name__ == '__main__':
     test_msg_0()
-    test_msg_11()
+    test_msg_20()
