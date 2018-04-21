@@ -185,7 +185,7 @@ class Decoder(object):
                 if m.NavIntegrityCat == 0 or m.NavIntegrityCat == 1:  # unknown or <20nm, consider it invalid
                     pass
             elif self.format == 'normal':
-                print 'MSG10: %0.7f %0.7f %d %d %d %02o' % (m.Latitude, m.Longitude, m.HVelocity, m.Altitude, m.TrackHeading, m.NavIntegrityCat)
+                print 'MSG10: %0.7f %0.7f %d %d %d' % (m.Latitude, m.Longitude, m.HVelocity, m.Altitude, m.TrackHeading)
             elif self.format == 'plotflight':
                 if self.altitudeAge < self.altitudeMaxAge:
                     altitude = self.altitude
