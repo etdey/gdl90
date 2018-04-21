@@ -181,8 +181,11 @@ class Decoder(object):
                 self.altitudeAge += 1
         
         elif m.MsgType == 'OwnershipReport':
-            if self.format == 'normal':
-                print 'MSG10: %0.7f %0.7f %d %d %d' % (m.Latitude, m.Longitude, m.HVelocity, m.Altitude, m.TrackHeading)
+            if m.Latitude == 0.00 and m.Longitude == 0.00:
+                if m.NavIntegrityCat == 0 or m.NavIntegrityCat == 1:  # unknown or <20nm, consider it invalid
+                    pass
+            elif self.format == 'normal':
+                print 'MSG10: %0.7f %0.7f %d %d %d %02o' % (m.Latitude, m.Longitude, m.HVelocity, m.Altitude, m.TrackHeading, m.NavIntegrityCat)
             elif self.format == 'plotflight':
                 if self.altitudeAge < self.altitudeMaxAge:
                     altitude = self.altitude
@@ -203,7 +206,9 @@ class Decoder(object):
                 self.altitudeAge = 0
         
         elif m.MsgType == 'TrafficReport':
-            if self.format == 'normal':
+            if m.Latitude == 0.00 and m.Longitude == 0.00 and m.NavIntegrityCat == 0:  # no valid position
+                pass
+            elif self.format == 'normal':
                 print 'MSG20: %0.7f %0.7f %d %d %d %d %s' % (m.Latitude, m.Longitude, m.HVelocity, m.VVelocity, m.Altitude, m.TrackHeading, m.CallSign)
         
         elif m.MsgType == 'GpsTime':
