@@ -1,0 +1,16 @@
+#
+# GDL90 recorder service
+#
+[Unit]
+Description=GDL90 Recorder for Stratus/Stratux
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/var/run/gdl90_recorder.pid
+ExecStart=/root/adsb/gdl90_service_wrapper start
+ExecReload=/root/adsb/gdl90_service_wrapper restart
+ExecStop=/root/adsb/gdl90_service_wrapper stop
+
+[Install]
+WantedBy=multi-user.target
