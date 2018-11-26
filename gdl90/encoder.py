@@ -226,7 +226,7 @@ class Encoder(object):
         return(self._preparedMessage(msg))
     
     
-    def msgSXHeartbeat(self, fv=0x0001, hv=0x0001, st1=0x02, st2=0x01, satLock=0, satConn=0, num978=0, num1090=0, rate978=0, rate1090=0, cpuTemp=0, towers=[]):
+    def msgSXHeartbeat(self, fv=0x0011, hv=0x0001, st1=0x02, st2=0x01, satLock=0, satConn=0, num978=0, num1090=0, rate978=0, rate1090=0, cpuTemp=0, towers=[]):
         """message ID #29 for Hiltonsoftware SX heartbeat"""
         
         msg = bytearray(chr(0x1d))
@@ -238,4 +238,21 @@ class Encoder(object):
             msg.extend(self._pack24bit(self._makeLatitude(lat)))
             msg.extend(self._pack24bit(self._makeLongitude(lon)))
         
+        return(self._preparedMessage(msg))
+
+
+    def msgForeFlightMessage101(self, subId=0, mv=1, sn=None, nameShort="Stratux", nameLong="gdl90-encoder", capmask=1):
+        """message ID #101 for ForeFlight"""
+        
+        if sn is None:
+            sn = chr(0xff)*8
+        else:
+            sn = str(sn + " "*8)[:8]
+        nameShort = str(nameShort + " "*8)[:8]
+        nameLong = str(nameLong + " "*16)[:16]
+
+        msg = bytearray(chr(0x65))
+        fmt = '>BB8s8s16sB'
+        msg.extend(struct.pack(fmt, subId, mv, sn, nameShort, nameLong, capmask))
+
         return(self._preparedMessage(msg))
