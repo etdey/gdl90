@@ -4,23 +4,31 @@
 
 This program implements a receiver of the GDL-90 data link interface.
 
-Copyright (c) 2012 by Eric Dey; All rights reserved
+This depends upon the 'netifaces' package in order to get information about
+the hosts network interfaces. It is installed with:
+  # apt-get install python-pip
+  # pip install netifaces
 """
 
 __progTitle__ = "GDL-90 Receiver"
 
 __author__ = "Eric Dey <eric@deys.org>"
 __created__ = "August 2012"
-__copyright__ = "Copyright (c) 2012 by Eric Dey"
+__copyright__ = "Copyright (C) 2018 by Eric Dey"
 
-__date__ = "$Date$"
-__version__ = "0.1"
-__revision__ = "$Revision$"
-__lastChangedBy__ = "$LastChangedBy$"
+__version__ = "0.2"
+__date__ = "16-NOV-2018"
 
 
 import os, sys, time, datetime, re, optparse, socket, struct, traceback
 import gdl90.decoder
+
+try:
+    import netifaces
+except ImportError:
+    sys.stderr.write("ERROR: could not import 'netifaces' package; use 'pip install netifaces' to add it\n")
+    sys.exit(1)
+
 
 # Default values for options
 DEF_RECV_PORT=43211
@@ -64,8 +72,7 @@ def _options_okay(options):
 
 def _get_progVersion():
     """return program version string"""
-    rev = _extractSvnKeywordValue(__revision__)
-    return "%s.%s" % (__version__, rev)
+    return "%s" % (__version__)
 
 
 def _getTimeStamp():
@@ -103,8 +110,18 @@ def _receive(options):
         s = open(options.inputfile, "rb")
     else:
         useNetwork = True
+        try:
+            if options.subnetbcast:
+                listenIP = netifaces.ifaddresses(options.interface)[netifaces.AF_INET][0]['broadcast']
+            elif options.bcast:
+                listenIP = '<broadcast>'
+            else:
+                listenIP = ''
+        except KeyError as e:
+            sys.stderr.write("ERROR: error getting network details for '%s' %s\n" % (options.interface,e))
+            sys.exit(1)
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.bind(('', options.port))
+        s.bind((listenIP, options.port))
     
     packetTotal = 0
     
@@ -134,6 +151,12 @@ def _receive(options):
 # Interactive Runs
 if __name__ == '__main__':
 
+    # get default network interface device
+    try:
+        def_interface = netifaces.interfaces()[1]
+    except IndexError:
+        def_interface = netifaces.interfaces()[0]   # loopback device
+    
     # Get name of program from command line or else use embedded default
     progName = os.path.basename(sys.argv[0])
 
@@ -158,6 +181,7 @@ if __name__ == '__main__':
 
     # optional options
     group = optparse.OptionGroup(optParser,"Optional")
+    group.add_option("--interface", action="store", default=def_interface, metavar="name", help="receive interface name (default=%default)")
     group.add_option("--port","-p", action="store", default=DEF_RECV_PORT, type="int", metavar="NUM", help="receive port (default=%default)")
     group.add_option("--maxsize","-s", action="store", default=DEF_RECV_MAXSIZE, type="int", metavar="BYTES", help="maximum packet size (default=%default)")
     group.add_option("--reportcount","-r", action="store", default=DEF_REPORT_COUNT, type="int", metavar="PACKETS", help="report after receiving this many packets (default=%default)")
@@ -165,6 +189,8 @@ if __name__ == '__main__':
     group.add_option("--date", action="store", metavar="YYYY-MM-DD", help="UTC starting date for data (default=now)")
     group.add_option("--plotflight", action="store_true", help="output plotflight format")
     group.add_option("--uat", action="store_true", help="output UAT messages")
+    group.add_option("--bcast", action="store_true", help="listen on 255.255.255.255")
+    group.add_option("--subnetbcast", action="store_true", help="listen on subnet broadcast")
     optParser.add_option_group(group)
 
     # do the option parsing
