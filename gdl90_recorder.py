@@ -4,12 +4,10 @@
 
 This program records RAW output from the GDL-90 data link interface.
 
-Copyright (c) 2014 by Eric Dey; All rights reserved
-
 This depends upon the 'netifaces' package in order to get information about
 the hosts network interfaces. It is installed with:
-  # apt-get install python-setuptools python-dev
-  # easy_install netifaces
+  # apt-get install python-pip
+  # pip install netifaces
 
 """
 
@@ -17,19 +15,21 @@ __progTitle__ = "GDL-90 Recorder"
 
 __author__ = "Eric Dey <eric@deys.org>"
 __created__ = "September 2012"
-__copyright__ = "Copyright (c) 2014 by Eric Dey"
+__copyright__ = "Copyright (C) 2018 by Eric Dey"
 
-__date__ = "$Date$"
-__version__ = "1.2"
-__revision__ = "$Revision$"
-__lastChangedBy__ = "$LastChangedBy$"
+__version__ = "1.3"
+__date__ = "16-NOV-2018"
 
 
 import os, sys, time, datetime, re, optparse, socket, struct, threading
-import netifaces
+
+try:
+    import netifaces
+except ImportError:
+    sys.stderr.write("ERROR: could not import 'netifaces' package; use 'pip install netifaces' to add it/n")
+    sys.exit(1)
 
 # Default values for options
-DEF_RECV_IFACE_NAME=''
 DEF_RECV_PORT=43211
 DEF_RECV_MAXSIZE=1500
 DEF_DATA_FLUSH_SECS=10
@@ -104,8 +104,7 @@ def _options_okay(options):
 
 def _get_progVersion():
     """return program version string"""
-    rev = _extractSvnKeywordValue(__revision__)
-    return "%s.%s" % (__version__, rev)
+    return "%s" % (__version__)
 
 
 def _getTimeStamp():
@@ -120,10 +119,13 @@ def _extractSvnKeywordValue(s):
     return re.sub(r'^\$[^:]*: (.*)\$$', r'\1', s).strip(' ')
 
 
-def _nextFileName(s, fmt=r'%s.%03d'):
+def _nextFileName(dirName, baseName='gdl90_cap', fmt=r'%s/%s.%03d'):
+    if not os.path.isdir(dirName):
+        Exception("Directory %s does not exist" % (dirName))
+
     i = 0
     while i < 1000:
-        fname = fmt % (s, i)
+        fname = fmt % (dirName, baseName, i)
         if not os.path.exists(fname):
             return fname
         i += 1
@@ -163,15 +165,26 @@ def _record(options):
     if options.verbose == True:
         print_error("will use log file name '%s'" % (logFileName))
 
+    try:
+        if options.subnetbcast:
+            listenIP = netifaces.ifaddresses(options.interface)[netifaces.AF_INET][0]['broadcast']
+        elif options.bcast:
+            listenIP = '<broadcast>'
+        else:
+            listenIP = ''
+    except KeyError as e:
+        sys.stderr.write("ERROR: error getting network details for '%s' %s\n" % (options.interface,e))
+        sys.exit(1)
     sockIn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sockIn.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sockIn.bind((_getAddressByIfaceName(options.interface, broadcast=True), options.port))
+    sockIn.bind((listenIP, options.port))
+        
     packetTotal = 0
     bytesTotal = 0
     lastFlushTime = time.time()
     
     if options.verbose == True:
-        print_error("Listening on interface '%s' at address '%s' port '%s'" % (options.interface, _getAddressByIfaceName(options.interface,broadcast=True), options.port))
+        print_error("Listening on interface '%s' at address '%s' port '%s'" % (options.interface, listenIP, options.port))
     
     sockOut = None
     if options.rebroadcast != "":
@@ -222,6 +235,12 @@ def _record(options):
 # Interactive Runs
 if __name__ == '__main__':
 
+    # get default network interface device
+    try:
+        def_interface = netifaces.interfaces()[1]
+    except IndexError:
+        def_interface = netifaces.interfaces()[0]   # loopback device
+
     # Get name of program from command line or else use embedded default
     progName = os.path.basename(sys.argv[0])
 
@@ -247,12 +266,15 @@ if __name__ == '__main__':
 
     # optional options
     group = optparse.OptionGroup(optParser,"Optional")
-    group.add_option("--interface", action="store", default=DEF_RECV_IFACE_NAME, metavar="name", help="receive interface name (default=%default)")
+    group.add_option("--interface", action="store", default=def_interface, metavar="name", help="receive interface name (default=%default)")
     group.add_option("--port","-p", action="store", default=DEF_RECV_PORT, type="int", metavar="NUM", help="receive port (default=%default)")
     group.add_option("--maxsize","-s", action="store", default=DEF_RECV_MAXSIZE, type="int", metavar="BYTES", help="maximum packet size (default=%default)")
     group.add_option("--dataflush", action="store", default=DEF_DATA_FLUSH_SECS, type="int", metavar="SECS", help="seconds between data file flush (default=%default)")
     group.add_option("--logprefix", action="store", default=DEF_LOG_PREFIX, metavar="PATH", help="path prefix for log file names (default=%default)")
     group.add_option("--rebroadcast", action="store", default="", metavar="name", help="rebroadcast interface (default=off)")
+    group.add_option("--bcast", action="store_true", help="listen on 255.255.255.255")
+    group.add_option("--subnetbcast", action="store_true", help="listen on subnet broadcast")
+
     optParser.add_option_group(group)
 
     # do the option parsing
