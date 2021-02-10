@@ -75,7 +75,7 @@ class Encoder(object):
         return(longitude)
     
     
-    def msgHeartbeat(self, st1=0x81, st2=0x00, ts=None, mc=0x0000):
+    def msgHeartbeat(self, st1=0x81, st2=0x01, ts=None, mc=0x0000):
         """message ID #0"""
         # Auto-fill timestamp if not provided
         if ts is None:
