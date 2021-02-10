@@ -88,7 +88,7 @@ class Encoder(object):
             st2 = st2 | 0x80
         
         msg = bytearray(chr(0x00))
-        fmt = '>BBHH'
+        fmt = '<BBHH'
         msg.extend(struct.pack(fmt,st1,st2,ts,mc))
         
         return(self._preparedMessage(msg))
