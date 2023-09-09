@@ -237,7 +237,7 @@ def messageUatToObject(msg):
         apdu = _extractAPDU(iframe.Data)
         if not apdu is None:
             if apdu.ProductID in [8,11,12,13,413]:
-                print "APDU%03d: [%s]" % (apdu.ProductID, dlac2string(apdu.Data))
+                print("APDU%03d: [%s]" % (apdu.ProductID, dlac2string(apdu.Data)))
             else:
                 pass
                 #print "APDU%03d: length=%d" % (apdu.ProductID, len(iframe.Data)-4)

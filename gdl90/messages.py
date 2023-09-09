@@ -217,7 +217,7 @@ def messageToObject(data):
     if not len(data) > 0:
         return None
     msgId = data[0]
-    if not msgId in MessageIDMapping.keys():
+    if not msgId in list(MessageIDMapping.keys()):
         return None
     msgObj = MessageIDMapping[msgId](data)
     return msgObj
