@@ -142,7 +142,7 @@ def _parseGpsTime(msgBytes):
     return msg._make(fields)
 
 
-def _unsigned24(data, littleEndian=False):
+def _unsigned24(data:bytearray, littleEndian:bool=False) -> int:
     """return a 24-bit unsigned integer with selectable Endian"""
     assert len(data) >= 3
     if littleEndian:
@@ -158,15 +158,15 @@ def _unsigned24(data, littleEndian=False):
     return val
 
 
-def _signed24(data, littleEndian=False):
+def _signed24(data:bytearray, littleEndian:bool=False) -> int:
     """return a 24-bit signed integer with selectable Endian"""
     val = _unsigned24(data, littleEndian)
-    if val > 8388607:
-        val -= 16777216
+    if val > 0x7FFFFF:
+        val -= 0x1000000
     return val
 
 
-def _unsigned16(data, littleEndian=False):
+def _unsigned16(data:bytearray, littleEndian:bool=False) -> int:
     """return a 16-bit unsigned integer with selectable Endian"""
     assert len(data) >= 2
     if littleEndian:
@@ -180,21 +180,43 @@ def _unsigned16(data, littleEndian=False):
     return val
 
 
-def _signed16(data, littleEndian=False):
+def _signed16(data:bytearray, littleEndian:bool=False) -> int:
     """return a 16-bit signed integer with selectable Endian"""
     val = _unsigned16(data, littleEndian)
-    if val > 32767:
-        val -= 65536
+    if val > 0x7FFF:
+        val -= 0x10000
     return val
 
 
-def _thunkByte(c, mask=0xff, shift=0):
-    """extract an integer from a byte applying a mask and a bit shift
-    @c character byte
-    @mask the AND mask to get the desired bits
-    @shift negative to shift right, positive to shift left, zero for no shift
+def _thunkByte(byte:int, mask:int=0xff, shift:int=0) -> int:
+    """extract a value from a byte by applying a mask and a bit shift
+
+    Args:
+        byte (int): The input byte to be thunked; should be in the range 0-255.
+        mask (int, optional): The mask value used for bitwise AND operation
+            (default is 0xff); should have the same number of bits as the input
+            byte to ensure meaningful results.
+        shift (int, optional): The number of bits to shift the result; can be
+            positive (left shift) or negative (right shift).
+
+    Returns:
+        int: The extracted integer value. While the input value must be 8-bit,
+            this result value can be greater when shifted left.
+
+    Raises:
+        ValueError: If the input byte is larger than 8-bits (greater than 255).
+
+    Examples:
+        >>> _thunkByte(0b11001100, 0b00111111, 2)
+        48
+        >>> _thunkByte(0b11001100, 0b00111100, -2)
+        3
+
     """
-    val = c & mask
+    if ((byte & 0xFF) != byte):
+        raise ValueError("input byte larger than 8-bits")
+    
+    val = byte & mask
     if shift < 0:
         val = val >> abs(shift)
     elif shift > 0:
