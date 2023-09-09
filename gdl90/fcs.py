@@ -2,7 +2,11 @@
 # fcs.py
 #
 
-"""GDL frame check sequence functions"""
+"""GDL-90 frame check sequence functions.
+
+This is a static table implementation of the CRC-16-CCITT error detection
+function used to validate the GDL-90 data frames.
+"""
 
 CRC16Table = (
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
@@ -40,7 +44,7 @@ CRC16Table = (
 )
 
 
-def createCRC16Table():
+def createCRC16Table() -> list:
     table = []
     mask16bit = 0xffff
     crc = 0
@@ -58,7 +62,7 @@ def createCRC16Table():
     return table
 
 
-def crcCompute(data):
+def crcCompute(data:bytearray) -> bytearray:
     mask16bit = 0xffff
     crcArray = bytearray()
     
@@ -68,12 +72,12 @@ def crcCompute(data):
         m = (crc << 8) & mask16bit
         crc = CRC16Table[(crc >> 8)] ^ m ^ c
     
-    crcArray.append(chr((crc & 0x00ff)))
-    crcArray.append(chr((crc & 0xff00) >> 8))
+    crcArray.append(crc & 0x00ff)
+    crcArray.append((crc & 0xff00) >> 8)
     return crcArray
 
 
-def crcCheck(data, crcInput):
+def crcCheck(data:bytearray, crcInput:bytearray) -> bool:
     """check the CRC value of the data block again a given input value
     @data : data block (usually a bytearray)
     @crcInput : sequence of 0-255 values (length two)
@@ -92,7 +96,7 @@ def crcCheck(data, crcInput):
 
 if __name__ == '__main__':
     
-    print "CRC16Table = ("
+    print("CRC16Table = (")
     i = 0
     crc16table = createCRC16Table()
     for row in range(32):
@@ -100,8 +104,8 @@ if __name__ == '__main__':
         for col in range(8):
             rowStr += "0x%04x, " % (crc16table[i])
             i += 1
-        print rowStr
-    print ")"
+        print(rowStr)
+    print(")")
     
     testDataBlocks = [
         ([0x00, 0x81, 0x41, 0xDB, 0xD0, 0x08, 0x02], [0xb3, 0x8b]),
@@ -113,11 +117,11 @@ if __name__ == '__main__':
     for (block, crck) in testDataBlocks:
         testdata = bytearray()
         for n in block:
-            testdata.append(chr(n))
+            testdata.append(n)
     
         if crcCheck(block, crck):
-            print "Test #%d: PASS" % (i)
+            print("Test #%d: PASS" % (i))
         else:
             crc = crcCompute(testdata)
-            print "Test #%d: FAIL ; Reference CRC = 0x%02x%02x, Computed CRC = 0x%02x%02x" % (i, crck[0], crck[1], crc[0], crc[1])
+            print("Test #%d: FAIL ; Reference CRC = 0x%02x%02x, Computed CRC = 0x%02x%02x" % (i, crck[0], crck[1], crc[0], crc[1]))
         i += 1
