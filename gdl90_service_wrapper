@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Systemd service wrapper for GDL90 recorder
+# Systemd service wrapper for GDL90 recorder running on RPi
 #
 #
 NETWORK_DEV=wlan0
@@ -10,28 +10,29 @@ ADSB_DIRECTORY=/root/adsb
 LOG_DIRECTORY=${ADSB_DIRECTORY}/logs
 RECORDER_SCRIPT=${ADSB_DIRECTORY}/gdl90_recorder.py
 
-PYTHON=/usr/bin/python
+PYTHON=/usr/bin/python3
 
 # this path must match the PIDFile value in the systemd unit.service file
 PID_FILE=/var/run/gdl90_recorder.pid
 
 
-running_pid() {
-    if [ -f $PID_FILE ]; then
-        pid=`cat $PID_FILE` &> /dev/null
+function running_pid {
+    if [[ -f $PID_FILE ]]; then
+        pid=$(< $PID_FILE) &> /dev/null
         cat /proc/${pid}/cmdline | grep "$PYTHON" &> /dev/null
-        if [ $? -eq 0 ]; then 
+        if [[ $? -eq 0 ]]; then 
             echo $pid
             return 0
         fi
     fi
     echo 0
+    return 1
 }
 
 
-do_start() {
-    pid=`running_pid`
-    if [ $pid -ne 0 ]; then
+function do_start {
+    pid=$(running_pid)
+    if [[ $pid -ne 0 ]]; then
         echo "ERROR: service appears to be running as PID $pid"
         echo "To remove stale pid file: rm $PID_FILE"
         return 1
@@ -45,9 +46,9 @@ do_start() {
 }
 
 
-do_stop() {
-    pid=`running_pid`
-    if [ $pid -eq 0 ]; then
+function do_stop {
+    pid=$(running_pid)
+    if [[ $pid -eq 0 ]]; then
         echo "INFO: did not find a running service to stop"
         return 0
     fi
@@ -60,7 +61,7 @@ do_stop() {
 case "$1" in
     start)
         do_start
-        [ $? -ne 0 ] && exit 1
+        [[ $? -ne 0 ]] && exit 1
         ;;
 
     stop)
