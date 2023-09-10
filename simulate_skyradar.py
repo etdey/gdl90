@@ -113,13 +113,13 @@ if __name__ == '__main__':
         s.sendto(buf, (destAddr, destPort))
         packetTotal += 1
         
-        # Ownership Report
-        buf = encoder.msgOwnershipReport(latitude=latitude, longitude=longitude, altitude=altitude, hVelocity=groundspeed, vVelocity=verticalspeed, trackHeading=heading, callSign=callSign)
+        # Ownship Report
+        buf = encoder.msgOwnshipReport(latitude=latitude, longitude=longitude, altitude=altitude, hVelocity=groundspeed, vVelocity=verticalspeed, trackHeading=heading, callSign=callSign)
         s.sendto(buf, (destAddr, destPort))
         packetTotal += 1
         
-        # Ownership Geometric Altitude
-        buf = encoder.msgOwnershipGeometricAltitude(altitude=altitude)
+        # Ownship Geometric Altitude
+        buf = encoder.msgOwnshipGeometricAltitude(altitude=altitude)
         s.sendto(buf, (destAddr, destPort))
         packetTotal += 1
         

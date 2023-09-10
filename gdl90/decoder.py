@@ -180,7 +180,7 @@ class Decoder(object):
             elif self.format == 'plotflight':
                 self.altitudeAge += 1
         
-        elif m.MsgType == 'OwnershipReport':
+        elif m.MsgType == 'OwnshipReport':
             if m.Latitude == 0.00 and m.Longitude == 0.00:
                 if m.NavIntegrityCat == 0 or m.NavIntegrityCat == 1:  # unknown or <20nm, consider it invalid
                     pass
@@ -190,7 +190,7 @@ class Decoder(object):
                 if self.altitudeAge < self.altitudeMaxAge:
                     altitude = self.altitude
                 else:
-                    # revert to 25' resolution altitude from ownership report
+                    # revert to 25' resolution altitude from ownship report
                     altitude = m.Altitude
                 
                 # Must have the GPS time from a message 101 before outputting anything
@@ -198,7 +198,7 @@ class Decoder(object):
                     return True
                 print('%02d:%02d:%02d %0.7f %0.7f %d %d %d' % (self.currtime.hour, self.currtime.minute, self.currtime.second, m.Latitude, m.Longitude, m.HVelocity, altitude, m.TrackHeading))
         
-        elif m.MsgType == 'OwnershipGeometricAltitude':
+        elif m.MsgType == 'OwnshipGeometricAltitude':
             if self.format == 'normal':
                 print('MSG11: %d %04xh' % (m.Altitude, m.VerticalMetrics))
             elif self.format == 'plotflight':
