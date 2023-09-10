@@ -30,5 +30,4 @@ class EncodingUtilChecks(unittest.TestCase):
             expected = bytearray(expected)
             computed = msg_encoder.msgHeartbeat(st1, st2, ts, mc)
             msg = "sequence %s does not match expected %s" % (self._as_hex_str(computed), self._as_hex_str(expected))
-            print("computed msg = %s" % self._as_hex_str(computed))
             self.assertEqual(computed, expected, msg=msg)
