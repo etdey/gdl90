@@ -47,7 +47,7 @@ EXIT_CODE = {
 
 def print_error(msg):
     """print an error message"""
-    print >> sys.stderr, msg
+    print(msg, file=sys.stderr)
 
 
 def _isNumeric(n):
@@ -222,14 +222,14 @@ def _record(options):
                 if options.verbose == True:
                     print_error("[%s] disk flush" %(lastFlushTime))
             
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
 
     if logFile: logFile.close()
     sockIn.close()
     if sockOut is not None:
         sockOut.close()
-    print "Recorded %d packets and %d bytes." % (packetTotal, bytesTotal)
+    print("Recorded %d packets and %d bytes." % (packetTotal, bytesTotal))
 
 
 # Interactive Runs
