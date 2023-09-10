@@ -2,7 +2,6 @@
 # encoder.py
 #
 
-import sys
 import datetime
 import struct
 from gdl90.fcs import crcCompute
@@ -14,40 +13,42 @@ class Encoder(object):
         pass
     
     
-    def _addCrc(self, msg):
+    def _addCrc(self, msg:bytearray) -> None:
         """compute the CRC for msg and append CRC bytes to msg"""
         crcBytes = crcCompute(msg)
         msg.extend(crcBytes)
     
     
-    def _escape(self, msg):
+    def _escape(self, msg:bytearray) -> bytearray:
         """escape 0x7d and 0x7e characters"""
         msgNew = bytearray()
-        escapeChar = chr(0x7d)
-        charsToEscape = (chr(0x7d), chr(0x7e))
+        escapeChar = 0x7d
+        charsToEscape = [0x7d, 0x7e]
         
         for i in range(len(msg)):
-            c = chr(msg[i])
+            c = msg[i]
             if c in charsToEscape:
-                msgNew.append(escapeChar)
-                msgNew.append(chr(ord(c) ^ 0x20))
+                msgNew.append(escapeChar)  # insert escape char to stream
+                msgNew.append(c ^ 0x20)    # modify original byte per spec.
             else:
                 msgNew.append(c)
         
         return(msgNew)
     
     
-    def _preparedMessage(self, msg):
+    def _preparedMessage(self, msg:bytearray) -> bytearray:
         """returns a prepared a message with CRC, escapes it, adds begin/end markers"""
         self._addCrc(msg)
         newMsg = self._escape(msg)
-        newMsg.insert(0,chr(0x7e))
-        newMsg.append(chr(0x7e))
+        newMsg.insert(0,0x7e)
+        newMsg.append(0x7e)
         return(newMsg)
     
     
-    def _pack24bit(self, num):
+    def _pack24bit(self, num:int) -> bytearray:
         """make a 24 bit packed array (MSB) from an unsigned number"""
+        if ((num & 0xFFFFFF) != num) or num < 0:
+            raise ValueError("input not a 24-bit unsigned value")
         a = bytearray()
         a.append((num & 0xff0000) >> 16)
         a.append((num & 0x00ff00) >> 8)
@@ -75,7 +76,7 @@ class Encoder(object):
         return(longitude)
     
     
-    def msgHeartbeat(self, st1=0x81, st2=0x00, ts=None, mc=0x0000):
+    def msgHeartbeat(self, st1=0x81, st2=0x01, ts=None, mc=0x0000):
         """message ID #0"""
         # Auto-fill timestamp if not provided
         if ts is None:
@@ -87,7 +88,7 @@ class Encoder(object):
             ts = ts & 0x0ffff
             st2 = st2 | 0x80
         
-        msg = bytearray(chr(0x00))
+        msg = bytearray([0x00])
         fmt = '>BBHH'
         msg.extend(struct.pack(fmt,st1,st2,ts,mc))
         
