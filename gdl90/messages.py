@@ -6,7 +6,7 @@
 
 from collections import namedtuple
 
-def _parseHeartbeat(msgBytes):
+def _parseHeartbeat(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 0x00"""
     assert len(msgBytes) == 7
     assert msgBytes[0] == 0x00
@@ -29,7 +29,7 @@ def _parseHeartbeat(msgBytes):
     return msg._make(fields)
 
 
-def _parseUplinkData(msgBytes):
+def _parseUplinkData(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 0x07"""
     assert len(msgBytes) == 436
     assert msgBytes[0] == 0x07
@@ -43,7 +43,7 @@ def _parseUplinkData(msgBytes):
     return msg._make(fields)
 
 
-def _parseOwnershipReport(msgBytes):
+def _parseOwnershipReport(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 0x0A"""
     assert len(msgBytes) == 28
     assert msgBytes[0] == 0x0a
@@ -51,7 +51,7 @@ def _parseOwnershipReport(msgBytes):
     return msg._make(_parseMessageType10and20('OwnershipReport', msgBytes))
 
 
-def _parseOwnershipGeometricAltitude(msgBytes):
+def _parseOwnershipGeometricAltitude(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 0x0B"""
     assert len(msgBytes) == 5
     assert msgBytes[0] == 0x0b
@@ -64,7 +64,7 @@ def _parseOwnershipGeometricAltitude(msgBytes):
     return msg._make(fields)
 
 
-def _parseTrafficReport(msgBytes):
+def _parseTrafficReport(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 0x14"""
     assert len(msgBytes) == 28
     assert msgBytes[0] == 0x14
@@ -72,7 +72,7 @@ def _parseTrafficReport(msgBytes):
     return msg._make(_parseMessageType10and20('TrafficReport', msgBytes))
 
 
-def _parseMessageType10and20(msgType, msgBytes):
+def _parseMessageType10and20(msgType:str, msgBytes:bytearray) -> namedtuple:
     """parse the fields for ownership and traffic reports"""
     fields = [msgType]
     
@@ -122,7 +122,7 @@ def _parseMessageType10and20(msgType, msgBytes):
     return fields
 
 
-def _parseGpsTime(msgBytes):
+def _parseGpsTime(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 0x65"""
     assert len(msgBytes) == 12
     assert msgBytes[0] == 0x65
