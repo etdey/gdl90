@@ -84,8 +84,8 @@ DLAC2StrTable = [
 MessageUATIDMapping = {
     0x00 : _parseHeartbeat,
     0x07 : _parseUplinkData,
-    0x0a : _parseOwnershipReport,
-    0x0b : _parseOwnershipGeometricAltitude,
+    0x0a : _parseOwnshipReport,
+    0x0b : _parseOwnshipGeometricAltitude,
     0x14 : _parseTrafficReport,
     0x65 : _parseGpsTime,
 }

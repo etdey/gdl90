@@ -95,7 +95,7 @@ class Encoder(object):
         return(self._preparedMessage(msg))
     
     
-    def msgOwnershipReport(self, status=0, addrType=0, address=0, latitude=0.0, longitude=0.0, altitude=0, misc=9, navIntegrityCat=8, navAccuracyCat=8, hVelocity=None, vVelocity=None, trackHeading=0, emitterCat=1, callSign='', code=0):
+    def msgOwnshipReport(self, status=0, addrType=0, address=0, latitude=0.0, longitude=0.0, altitude=0, misc=9, navIntegrityCat=8, navAccuracyCat=8, hVelocity=None, vVelocity=None, trackHeading=0, emitterCat=1, callSign='', code=0):
         """message ID #10"""
         return(self._msgType10and20(10, status, addrType, address, latitude, longitude, altitude, misc, navIntegrityCat, navAccuracyCat, hVelocity, vVelocity, trackHeading, emitterCat, callSign, code))
     
@@ -167,7 +167,7 @@ class Encoder(object):
         return(self._preparedMessage(msg))
     
     
-    def msgOwnershipGeometricAltitude(self, altitude=0, merit=50, warning=False):
+    def msgOwnshipGeometricAltitude(self, altitude=0, merit=50, warning=False):
         """message ID #11"""
         msg = bytearray(chr(0x0b))
         

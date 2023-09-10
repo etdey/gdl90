@@ -43,20 +43,20 @@ def _parseUplinkData(msgBytes:bytearray) -> namedtuple:
     return msg._make(fields)
 
 
-def _parseOwnershipReport(msgBytes:bytearray) -> namedtuple:
+def _parseOwnshipReport(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 0x0A"""
     assert len(msgBytes) == 28
     assert msgBytes[0] == 0x0a
-    msg = namedtuple('OwnershipReport', 'MsgType Status Type Address Latitude Longitude Altitude Misc NavIntegrityCat NavAccuracyCat HVelocity VVelocity TrackHeading EmitterCat CallSign Code')
-    return msg._make(_parseMessageType10and20('OwnershipReport', msgBytes))
+    msg = namedtuple('OwnshipReport', 'MsgType Status Type Address Latitude Longitude Altitude Misc NavIntegrityCat NavAccuracyCat HVelocity VVelocity TrackHeading EmitterCat CallSign Code')
+    return msg._make(_parseMessageType10and20('OwnshipReport', msgBytes))
 
 
-def _parseOwnershipGeometricAltitude(msgBytes:bytearray) -> namedtuple:
+def _parseOwnshipGeometricAltitude(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 0x0B"""
     assert len(msgBytes) == 5
     assert msgBytes[0] == 0x0b
-    msg = namedtuple('OwnershipGeometricAltitude', 'MsgType Altitude VerticalMetrics')
-    fields = ['OwnershipGeometricAltitude']
+    msg = namedtuple('OwnshipGeometricAltitude', 'MsgType Altitude VerticalMetrics')
+    fields = ['OwnshipGeometricAltitude']
     
     fields.append(_signed16(msgBytes[1:]) * 5) ;# height in 5 ft increments
     fields.append((msgBytes[3] << 8) + msgBytes[4])
@@ -73,7 +73,7 @@ def _parseTrafficReport(msgBytes:bytearray) -> namedtuple:
 
 
 def _parseMessageType10and20(msgType:str, msgBytes:bytearray) -> namedtuple:
-    """parse the fields for ownership and traffic reports"""
+    """parse the fields for ownship and traffic reports"""
     fields = [msgType]
     
     fields.append(_thunkByte(msgBytes[1], 0x0b11110000, -4)) ;# status
@@ -227,8 +227,8 @@ def _thunkByte(byte:int, mask:int=0xff, shift:int=0) -> int:
 MessageIDMapping = {
     0x00 : _parseHeartbeat,
     0x07 : _parseUplinkData,
-    0x0a : _parseOwnershipReport,
-    0x0b : _parseOwnershipGeometricAltitude,
+    0x0a : _parseOwnshipReport,
+    0x0b : _parseOwnshipGeometricAltitude,
     0x14 : _parseTrafficReport,
     0x65 : _parseGpsTime,
 }
