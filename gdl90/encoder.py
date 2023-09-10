@@ -83,14 +83,14 @@ class Encoder(object):
             dt = datetime.datetime.utcnow()
             ts = (dt.hour * 3600) + (dt.minute * 60) + dt.second
         
-        # Move 17-bit into status byte 2 if necessary
-        if (ts & 0x10000) != 0:
-            ts = ts & 0x0ffff
-            st2 = st2 | 0x80
+        # Move timestamp bit-16 into bit-7 of status byte 2
+        ts_bit16 = (ts & 0x10000) >> 16
+        st2 = (st2 & 0b0111111) | (ts_bit16 << 7)
         
         msg = bytearray([0x00])
-        fmt = '>BBHH'
-        msg.extend(struct.pack(fmt,st1,st2,ts,mc))
+        msg.extend(struct.pack('>BB', st1, st2))  # status bytes
+        msg.extend(struct.pack('<H', ts & 0xFFFF))  # timestamp encoded little endian
+        msg.extend(struct.pack('>H', mc))  # message count
         
         return(self._preparedMessage(msg))
     
