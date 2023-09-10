@@ -43,28 +43,25 @@ class CRCChecks(unittest.TestCase):
     ]
 
 
-    def bytearray_to_string(self, input:bytearray) -> str:
-        """convert a bytearray to a readable string"""
-        output = '['
-        for b in input:
-            output += ('0x%02X,' % (b))
+    def _as_hex_str(self, data:bytearray) -> str:
+        values = []
+        for byte in data:
+            values.append(hex(byte))
+        return "[%s]" % (",".join(values))
         
-        output = output.rstrip(',') + ']'
-        return(output)
-    
 
     def test_crc_good(self):
         for (test, crc) in self.good_values:
-            test_str = self.bytearray_to_string(test)
-            crc_str = self.bytearray_to_string(crc)
-            res_str = self.bytearray_to_string(crcCompute(test))
+            test_str = self._as_hex_str(test)
+            crc_str = self._as_hex_str(crc)
+            res_str = self._as_hex_str(crcCompute(test))
             msg = "input=%s, expected_crc=%s, computed_crc=%s" % (test_str, crc_str, res_str)
             self.assertTrue(crcCheck(test, crc), msg=msg)
     
 
     def test_crc_bad(self):
         for (test, crc) in self.bad_values:
-            test_str = self.bytearray_to_string(test)
+            test_str = self._as_hex_str(test)
             msg = "input=%s should fail validation" % (test_str)
             self.assertFalse(crcCheck(test, crc), msg=msg)
 
