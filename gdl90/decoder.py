@@ -231,20 +231,20 @@ class Decoder(object):
         return True
     
     
-    def _unescape(self, msg):
+    def _unescape(self, msg:bytearray) -> bytearray:
         """unescape 0x7e and 0x7d characters in coded message"""
         msgNew = bytearray()
         escapeValue = 0x7d
         foundEscapeChar = False
         while True:
             try:
-                i = msg.index(chr(escapeValue))
+                i = msg.index(escapeValue)
                 foundEscapeChar = True
                 msgNew.extend(msg[0:i]); # everything up to the escape character
                 
                 # this will throw an exception if nothing follows the escape
                 escapedValue = msg[i+1] ^ 0x20
-                msgNew.append(chr(escapedValue)); # escaped value
+                msgNew.append(escapedValue); # escaped value
                 del(msg[0:i+2]); # remove prefix bytes, escape, and escaped value
                 
             except (ValueError, IndexError):
