@@ -45,7 +45,7 @@ EXIT_CODE = {
 
 def print_error(msg):
     """print an error message"""
-    print >> sys.stderr, msg
+    print(msg, file=sys.stderr)
 
 
 def _isNumeric(n):

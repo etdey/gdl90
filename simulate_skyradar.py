@@ -50,15 +50,15 @@ def horizontal_speed(distance, seconds):
 
 if __name__ == '__main__':
     
-    if 'SEND_ADDR' in os.environ.keys():
+    if 'SEND_ADDR' in list(os.environ.keys()):
         destAddr = os.environ['SEND_ADDR']
     else:
         destAddr = DEF_SEND_ADDR
 
     destPort = int(DEF_SEND_PORT)
 
-    print "Simulating Skyradar unit."
-    print "Transmitting to %s:%s" % (destAddr, destPort)
+    print("Simulating Skyradar unit.")
+    print("Transmitting to %s:%s" % (destAddr, destPort))
     
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         # On-screen status output
         uptime += 1
         if uptime % 10 == 0:
-            print "Uptime %d, lat=%3.6f, long=%3.6f, altitude=%d, heading=%d, angle=%3.3f" % (uptime, latitude, longitude, altitude, heading, angle)
+            print("Uptime %d, lat=%3.6f, long=%3.6f, altitude=%d, heading=%d, angle=%3.3f" % (uptime, latitude, longitude, altitude, heading, angle))
         
         # Delay for the rest of this second
         time.sleep(1.0 - (time.time() - timeStart))
