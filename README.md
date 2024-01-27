@@ -1,40 +1,16 @@
 # GDL 90 Decoder and Encoder
 
-This package is a set of tools and libraries for decoding and encoding the GDL
-90 protocol used for ADS-B in transmissions. The focus of this package is on a
-client application within an aircraft that is receiving a data stream from an
-ADS-B hardware device. Any _sending_ tools are meant to simulate the hardware
-device for a listening client application.
-
-Unless otherwise stated in the included files, the files within this package
-are subject to the following copyright and license.
-
-> Copyright (c) 2016 Eric Dey
-> 
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
-> 
-> The above copyright notice and this permission notice shall be included in
-> all copies or substantial portions of the Software.
-> 
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
+This package is a set of tools and libraries derived from https://github.com/etdey/gdl90.
+A replay file was added for csv-Files coming from Garmin Aviation devices like G1000. 
+In addition the scripts are (at least partially) migrated to Python 3.x.
 
 
 ## Package Overview
 
-The package requires Python 2.6 or 2.7 and makes use of the Python Standard
+The package requires Python 3.x and makes use of the Python Standard
 Library for all functions except where noted. The primary tool components are:
 
+* simulate_GarminFromFile.py -- takes a Garmin csv-File and simulate a ADS-B hardware with this data
 * gdl90_receiver.py -- _receives a live or recorded data stream from ADS-B hardware_
 * gld90_recorder.py -- _records the raw data stream from ADS-B hardware to file_
 * gld90_sender.py -- _sends a previously recorded data stream to network_
@@ -42,10 +18,31 @@ Library for all functions except where noted. The primary tool components are:
 The `gdl90` subdirectory contains the libraries for decoding and encoding the
 GDL 90 and UAT messages.
 
+## Garmin CSV-File Replay / Simulate
+
+This simulator takes a CSV-File from a Garmin Aviation Device (e.g. G1000) and replays the flight data as 
+simulated ADS-B hardware (although without traffic information).
+
+```
+$ ./simulate_GarminFromFile.py --help
+Usage: simulate_GarminFromFile.py {requiredOptions} [otherOptions]
+
+Options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Verbose reporting on STDERR
+  -f FILE, --file=FILE  input file (default=STDIN)
+  -c CALLSIGN, --callsign=CALLSIGN
+                        Aeroplane Callsign (default=DEUKN)
+
+  Optional:
+    -s SPEEDFACTOR, --speedfactor=SPEEDFACTOR
+                        time lapse factor (default=5.0)
+    -d IP, --dest=IP    destination IP (default=255.255.255.255)
+    -p NUM, --port=NUM  destination port (default=43211)
 
 ## Receiver
 
-The receiver can be used decode a live data stream or process a recorded GLD 90
+The receiver can be used decode a live data stream or process a recorded GLS 90
 file. The output is a line-by-line decoding of the individual message types,
 including the optional UAT messages, or a compact text record format that
 allows for automated processing.

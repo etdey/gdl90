@@ -68,8 +68,8 @@ def crcCompute(data):
         m = (crc << 8) & mask16bit
         crc = CRC16Table[(crc >> 8)] ^ m ^ c
     
-    crcArray.append(chr((crc & 0x00ff)))
-    crcArray.append(chr((crc & 0xff00) >> 8))
+    crcArray.append((crc & 0x00ff))
+    crcArray.append((crc & 0xff00) >> 8)
     return crcArray
 
 
@@ -92,7 +92,7 @@ def crcCheck(data, crcInput):
 
 if __name__ == '__main__':
     
-    print "CRC16Table = ("
+    print("CRC16Table = (")
     i = 0
     crc16table = createCRC16Table()
     for row in range(32):
@@ -100,8 +100,8 @@ if __name__ == '__main__':
         for col in range(8):
             rowStr += "0x%04x, " % (crc16table[i])
             i += 1
-        print rowStr
-    print ")"
+        print(rowStr)
+    print(")")
     
     testDataBlocks = [
         ([0x00, 0x81, 0x41, 0xDB, 0xD0, 0x08, 0x02], [0xb3, 0x8b]),
@@ -116,8 +116,8 @@ if __name__ == '__main__':
             testdata.append(chr(n))
     
         if crcCheck(block, crck):
-            print "Test #%d: PASS" % (i)
+            print("Test #%d: PASS" % (i))
         else:
             crc = crcCompute(testdata)
-            print "Test #%d: FAIL ; Reference CRC = 0x%02x%02x, Computed CRC = 0x%02x%02x" % (i, crck[0], crck[1], crc[0], crc[1])
+            print("Test #%d: FAIL ; Reference CRC = 0x%02x%02x, Computed CRC = 0x%02x%02x" % (i, crck[0], crck[1], crc[0], crc[1]))
         i += 1

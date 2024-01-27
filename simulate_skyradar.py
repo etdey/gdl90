@@ -11,18 +11,19 @@ Copyright (c) 2013 by Eric Dey; All rights reserved
 
 import time
 import socket
-import gdl90.encoder
+import gdl90.encoder 
 import math
 import os
+import datetime
 
 # Default values for options
-#DEF_SEND_ADDR="255.255.255.255"
-DEF_SEND_ADDR="10.1.1.255"
+DEF_SEND_ADDR="255.255.255.255"
+#DEF_SEND_ADDR="10.1.1.255"
 DEF_SEND_PORT=43211
 
 LATLONG_TO_RADIANS = math.pi / 180.0
 RADIANS_TO_NM = 180.0 * 60.0 / math.pi
-
+ 
 def distance(lat0, lon0, lat1, lon1):
     """compute distance between two points"""
     lat0 *= LATLONG_TO_RADIANS
@@ -57,8 +58,8 @@ if __name__ == '__main__':
 
     destPort = int(DEF_SEND_PORT)
 
-    print "Simulating Skyradar unit."
-    print "Transmitting to %s:%s" % (destAddr, destPort)
+    print("Simulating Skyradar unit.")
+    print("Transmitting to %s:%s" % (destAddr, destPort))
     
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -88,15 +89,15 @@ if __name__ == '__main__':
     uptime = 0
     latitudePrev = 0.0
     longitudePrev = 0.0
-    
+ 
+    initdatetime = datetime.datetime(2024,1,1,11,22,33)   
+    timeisnow = initdatetime
+    delta = datetime.timedelta(0,1)
     while True:
         
-        timeStart = time.time()  # mark start time of message burst
-        
-        # Move ourself
+         # Move ourself
         angle += 0.66666  # degrees
-        while angle >= 360.0:
-            angle -= 360.0
+        angle -= 360.0
         angleRadians = (angle / 180.0) * math.pi
         latitude = latCenter - (pathRadius * math.sin(angleRadians))
         longitude = longCenter + (pathRadius * math.cos(angleRadians))
@@ -109,7 +110,8 @@ if __name__ == '__main__':
         longitudePrev = longitude
         
         # Heartbeat Message
-        buf = encoder.msgHeartbeat()
+
+        buf = encoder.msgHeartbeat(ts = timeisnow)
         s.sendto(buf, (destAddr, destPort))
         packetTotal += 1
         
@@ -136,9 +138,12 @@ if __name__ == '__main__':
         packetTotal += 1
         
         # On-screen status output
-        uptime += 1
-        if uptime % 10 == 0:
-            print "Uptime %d, lat=%3.6f, long=%3.6f, altitude=%d, heading=%d, angle=%3.3f" % (uptime, latitude, longitude, altitude, heading, angle)
+        timeisnow = timeisnow + delta
+        gonetime = timeisnow-initdatetime
+        seconds = int(gonetime.seconds)
+        if (seconds % 10 == 0):
+            print("Uptime %d, lat=%3.6f, long=%3.6f, altitude=%d, heading=%d, angle=%3.3f" % (seconds, latitude, longitude, altitude, heading, angle))
         
         # Delay for the rest of this second
-        time.sleep(1.0 - (time.time() - timeStart))
+        time.sleep(1.0)
+
