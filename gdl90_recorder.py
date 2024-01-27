@@ -222,14 +222,14 @@ def _record(options):
                 if options.verbose == True:
                     print_error("[%s] disk flush" %(lastFlushTime))
             
-    except Exception, e:
-        print e
+    except Exception e:
+        print(e)
 
     if logFile: logFile.close()
     sockIn.close()
     if sockOut is not None:
         sockOut.close()
-    print "Recorded %d packets and %d bytes." % (packetTotal, bytesTotal)
+    print("Recorded %d packets and %d bytes." % (packetTotal, bytesTotal))
 
 
 # Interactive Runs
