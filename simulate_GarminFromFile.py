@@ -33,6 +33,7 @@ __lastChangedBy__ = "$LastChangedBy$"
 # Default values for options
 DEF_SEND_ADDR="255.255.255.255"
 DEF_SEND_PORT=43211
+# DEF_SEND_PORT=4000
 
 # These are the identifiers in a Garmin CSV file
 id_date = 'Lcl Date'
@@ -96,7 +97,7 @@ if __name__ == '__main__':
 
     # optional options
     group = optparse.OptionGroup(optParser,"Optional")
-    group.add_option("--lapsefactor","-l", action="store", default="1.0", type="float", metavar="LAPSEFACTOR", help="time lapse factor (default=5.0)")
+    group.add_option("--lapsefactor","-l", action="store", default="2.0", type="float", metavar="LAPSEFACTOR", help="time lapse factor (default=5.0)")
     group.add_option("--timeofstart","-s", action="store", default="0.0", type="float", metavar="TIMEOFSTART", help="relative time to start [s] (default=0.0)")
     group.add_option("--takeoff_altitude","-a", action="store", default="-1000", type="float", metavar="TAKEOFFALT", help="Correct take off altitude [ft]) (default=-1000)")
     group.add_option("--landing_altitude","-t", action="store", default="-1000", type="float", metavar="LANDINGALT", help="Correct landing altitude [ft]) (default=-1000)")

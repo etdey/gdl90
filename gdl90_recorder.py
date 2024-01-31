@@ -222,7 +222,7 @@ def _record(options):
                 if options.verbose == True:
                     print_error("[%s] disk flush" %(lastFlushTime))
             
-    except Exception e:
+    except Exception as e:
         print(e)
 
     if logFile: logFile.close()
