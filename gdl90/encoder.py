@@ -2,8 +2,6 @@
 # encoder.py
 #
 
-import msvcrt
-import sys
 import datetime
 import struct
 from gdl90.fcs import crcCompute

@@ -23,11 +23,11 @@ __date__ = "16-NOV-2018"
 
 import os, sys, time, datetime, re, optparse, socket, struct, threading
 
-try:
-    import netifaces
-except ImportError:
-    sys.stderr.write("ERROR: could not import 'netifaces' package; use 'pip install netifaces' to add it/n")
-    sys.exit(1)
+#try:
+#    import netifaces
+#except ImportError:
+#    sys.stderr.write("ERROR: could not import 'netifaces' package; use 'pip install netifaces' to add it/n")
+#    sys.exit(1)
 
 # Default values for options
 DEF_RECV_PORT=43211
@@ -71,15 +71,15 @@ def _options_okay(options):
     if options.interface == '':
         # this means use all interfaces
         pass
-    elif _getAddressByIfaceName(options.interface) is None:
-        errors = True
-        print_error("Argument '--interface' is not a valid interface name")
-    else:
-        try:
-            netifaces.ifaddresses(options.interface)[netifaces.AF_INET][0]
-        except KeyError:
-            errors = True
-            print_error("Receive interface does not have an IP address")
+    #elif _getAddressByIfaceName(options.interface) is None:
+    #    errors = True
+    #    print_error("Argument '--interface' is not a valid interface name")
+    #else:
+    #    try:
+    #        netifaces.ifaddresses(options.interface)[netifaces.AF_INET][0]
+    #    except KeyError:
+    #        errors = True
+    #        print_error("Receive interface does not have an IP address")
     
     if options.rebroadcast != "":
         if options.interface == '':
@@ -92,12 +92,12 @@ def _options_okay(options):
         elif options.interface == options.rebroadcast:
             print_error("Receive interface must be different from rebroadcast interface; disabling rebroadcast")
             options.rebroadcast = ""
-        else:
-            try:
-                netifaces.ifaddresses(options.rebroadcast)[netifaces.AF_INET][0]
-            except KeyError:
-                print_error("Rebroadcast interface does not have an IP address; disabling rebroadcast")
-                options.rebroadcast = ""
+        #else:
+        #    try:
+        #        netifaces.ifaddresses(options.rebroadcast)[netifaces.AF_INET][0]
+        #    except KeyError:
+        #        print_error("Rebroadcast interface does not have an IP address; disabling rebroadcast")
+        #        options.rebroadcast = ""
     
     return not errors
 
@@ -146,10 +146,10 @@ def _getAddressByIfaceName(ifname, broadcast=False):
     if not ifname in netifaces.interfaces():
         return None
     
-    try:
-        ifdetails = netifaces.ifaddresses(ifname)[netifaces.AF_INET][0]
-    except KeyError:
-        return None
+    #try:
+    #    ifdetails = netifaces.ifaddresses(ifname)[netifaces.AF_INET][0]
+    #except KeyError:
+    #    return None
     
     if broadcast:
         return ifdetails['broadcast']
@@ -237,9 +237,9 @@ if __name__ == '__main__':
 
     # get default network interface device
     try:
-        def_interface = netifaces.interfaces()[1]
+        # def_interface = netifaces.interfaces()[1]
     except IndexError:
-        def_interface = netifaces.interfaces()[0]   # loopback device
+        # def_interface = netifaces.interfaces()[0]   # loopback device
 
     # Get name of program from command line or else use embedded default
     progName = os.path.basename(sys.argv[0])
@@ -271,7 +271,7 @@ if __name__ == '__main__':
     group.add_option("--maxsize","-s", action="store", default=DEF_RECV_MAXSIZE, type="int", metavar="BYTES", help="maximum packet size (default=%default)")
     group.add_option("--dataflush", action="store", default=DEF_DATA_FLUSH_SECS, type="int", metavar="SECS", help="seconds between data file flush (default=%default)")
     group.add_option("--logprefix", action="store", default=DEF_LOG_PREFIX, metavar="PATH", help="path prefix for log file names (default=%default)")
-    group.add_option("--rebroadcast", action="store", default="", metavar="name", help="rebroadcast interface (default=off)")
+    group.add_option("--rebroadcast", action="store", default="off", metavar="name", help="rebroadcast interface (default=%default)")
     group.add_option("--bcast", action="store_true", help="listen on 255.255.255.255")
     group.add_option("--subnetbcast", action="store_true", help="listen on subnet broadcast")
 
