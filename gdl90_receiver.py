@@ -20,7 +20,7 @@ __version__ = "0.2"
 __date__ = "16-NOV-2018"
 
 
-import os, sys, time, datetime, re, optparse, socket, struct, traceback
+import os, sys, datetime, re, optparse, socket
 import gdl90.decoder
 
 try:
@@ -45,7 +45,7 @@ EXIT_CODE = {
 
 def print_error(msg):
     """print an error message"""
-    print >> sys.stderr, msg
+    print(msg, sys.stderr)
 
 
 def _isNumeric(n):

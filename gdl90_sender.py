@@ -37,7 +37,7 @@ EXIT_CODE = {
 
 def print_error(msg):
     """print an error message"""
-    print >> sys.stderr, msg
+    print(msg, sys.stderr)
 
 
 def _isNumeric(n):
@@ -113,7 +113,7 @@ def _send(options):
     
     s.close()
     inputFile.close()
-    print "%s packets sent to %s:%s" % (packetTotal, options.dest, options.port)
+    print("%s packets sent to %s:%s" % (packetTotal, options.dest, options.port))
 
 
 
