@@ -179,7 +179,6 @@ def simulateIt(filename, callSign, timeofstart=0, duration=1.0e9, takeoff_altitu
             print("Real Time %s, lat=%3.6f, long=%3.6f, altitudeMSL=%d, heading=%d, groundspeed=%d, airspeed=%d" % (currdatetime.strftime('%H:%M:%S'), latitude, longitude, altitudeMSL, heading, groundspeed, airspeed))
             
         # Delay for the rest of this second
-        # Delay to 100ms for each step - so video can be slowed down by given factor
         time.sleep(max(0.0, 1.0/lapsefactor - (time.time() - timeStart)))
 
     print('Sent lines of csv-file: %d' % (reader.line_num))    

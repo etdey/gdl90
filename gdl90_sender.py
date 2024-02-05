@@ -25,7 +25,7 @@ import os, sys, time, datetime, re, optparse, socket, struct
 DEF_SEND_ADDR="255.255.255.255"
 DEF_SEND_PORT=43211
 DEF_SEND_SIZE=50
-DEF_SEND_INTERVAL_MS=10
+DEF_SEND_INTERVAL_MS=1000
 
 # Exit codes
 EXIT_CODE = {
@@ -103,14 +103,14 @@ def _send(options):
     packetTotal = 0
     packetDelay = float(options.delay) / 1000.0
     while True:
+        timestart = time.time()
         buf = inputFile.read(options.size)
         if len(buf) == 0:
             break
         
         s.sendto(buf, (options.dest, options.port))
         packetTotal += 1
-        time.sleep(packetDelay)
-    
+        time.sleep(max(0.0, packetDelay - (time.time() - timestart)))    
     s.close()
     inputFile.close()
     print("%s packets sent to %s:%s" % (packetTotal, options.dest, options.port))
@@ -141,7 +141,7 @@ if __name__ == '__main__':
 
     # add options outside of any option group
     optParser.add_option("--verbose", "-v", action="store_true", help="Verbose reporting on STDERR")
-    optParser.add_option("--file","-f", action="store", default="", type="str", metavar="FILE", help="input file (default=STDIN)")
+    optParser.add_option("--file","-f", action="store", default="gdl90_cap.000", type="str", metavar="FILE", help="input file (default=STDIN)")
 
     # optional options
     group = optparse.OptionGroup(optParser,"Optional")
