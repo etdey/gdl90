@@ -1,14 +1,25 @@
-            - name: Buildozer action
-  # You may pin to the exact commit or the version.
-  # uses: ArtemSBulgakov/buildozer-action@5939413afbe1640f71dc6e0d93459210f3d38fca
-  uses: ArtemSBulgakov/buildozer-action@v1.1.3
-  with:
-    # Command to start Buildozer. Set to `buildozer ios debug` for iOS
-    command: # default is buildozer android debug
-    # Path to cloned repository. Set if you specified path for `actions/checkout` action.
-    repository_root: # default is .
-    # Working directory where buildozer.spec is located. Set to `src` if buildozer.spec is in `src` directory
-    workdir: # default is GDLRecordApp
-    # Version of Buildozer to install. By default installs latest release
-    buildozer_version: # default is stable
-          
+name: buildRecorder
+run-name: ${{ github.actor }} is building an app
+author: Jochen Köhler
+on: [push]
+inputs:
+  command:
+    description: Command to start Buildozer. Set to `buildozer ios debug` for iOS
+    required: true
+    default: buildozer android debug
+  repository_root:
+    description: Path to cloned repository. Set if you specified path for `actions/checkout` action.
+    required: true
+    default: .
+  workdir:
+    description: Working directory where buildozer.spec is located. Set to `src` if buildozer.spec is in `src` directory
+    required: true
+    default: GDLRecordApp
+  buildozer_version:
+    description: Version of Buildozer to install. By default installs latest release
+    required: true
+    default: stable
+
+outputs:
+  filename:
+    description: GDLRecordApp
