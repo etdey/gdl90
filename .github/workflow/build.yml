@@ -1,4 +1,5 @@
 name: Build
+uses: ArtemSBulgakov/buildozer-action@v1.1.3
 on:
   push:
     branches-ignore:
@@ -10,7 +11,7 @@ on:
     branches-ignore:
       - data
       - gh-pages
-
+            
 jobs:
   # Build job. Builds app for Android with Buildozer
   build-android:
