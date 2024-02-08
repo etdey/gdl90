@@ -1,0 +1,44 @@
+#:kivy 1.1.0
+
+Root:
+    label_path: label_path
+    label_state: label_state
+
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: 'Choose Path'
+                on_release: root.show_choose()
+            Button:
+                text: 'Start Recording'
+                on_release: root.toggle_recordState()
+
+        BoxLayout:
+            Label:
+                id: label_path
+                text: 'Selected Path'
+            Label:
+                id: label_state
+                text: 'Recording not started yet'
+
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Load"
+                on_release: root.load(filechooser.path, filechooser.selection)

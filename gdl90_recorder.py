@@ -21,7 +21,7 @@ __version__ = "1.3"
 __date__ = "16-NOV-2018"
 
 
-import os, sys, time, datetime, re, optparse, socket, struct, threading
+import os, sys, time, datetime, re, optparse, socket
 
 try:
     import netifaces
@@ -35,7 +35,7 @@ DEF_RECV_MAXSIZE=1500
 DEF_DATA_FLUSH_SECS=10
 DEF_LOG_PREFIX="./"
 
-SLOWEXIT_DELAY=15
+SLOWEXIT_DELAY=60
 
 # Exit codes
 EXIT_CODE = {
@@ -236,6 +236,8 @@ def _record(options):
 if __name__ == '__main__':
 
     # get default network interface device
+    for i in netifaces.interfaces():
+        print("Interface %i %s" % (i, netifaces.interfaces()[i]))
     try:
         def_interface = netifaces.interfaces()[1]
     except IndexError:
@@ -271,7 +273,7 @@ if __name__ == '__main__':
     group.add_option("--maxsize","-s", action="store", default=DEF_RECV_MAXSIZE, type="int", metavar="BYTES", help="maximum packet size (default=%default)")
     group.add_option("--dataflush", action="store", default=DEF_DATA_FLUSH_SECS, type="int", metavar="SECS", help="seconds between data file flush (default=%default)")
     group.add_option("--logprefix", action="store", default=DEF_LOG_PREFIX, metavar="PATH", help="path prefix for log file names (default=%default)")
-    group.add_option("--rebroadcast", action="store", default="", metavar="name", help="rebroadcast interface (default=off)")
+    group.add_option("--rebroadcast", action="store", default="", metavar="name", help="rebroadcast interface (default=%default)")
     group.add_option("--bcast", action="store_true", help="listen on 255.255.255.255")
     group.add_option("--subnetbcast", action="store_true", help="listen on subnet broadcast")
 
