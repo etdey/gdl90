@@ -26,7 +26,7 @@ class Root(FloatLayout):
 
     def show_choose(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
-        self._popup = Popup(title="Load file", content=content,
+        self._popup = Popup(title="Choose directory", content=content,
                             size_hint=(0.9, 0.9))
         self._popup.open()
 
