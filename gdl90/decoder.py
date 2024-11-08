@@ -34,7 +34,7 @@ class Decoder(object):
         # setup internal time tracking
         self.gpsTimeReceived = False
         self.dayStart = None
-        self.currtime = datetime.datetime.utcnow()
+        self.currtime = datetime.datetime.now(datetime.timezone.utc)
         self.heartbeatInterval = datetime.timedelta(seconds=1)
     
     
