@@ -80,7 +80,7 @@ class Encoder(object):
         """message ID #0"""
         # Auto-fill timestamp if not provided
         if ts is None:
-            dt = datetime.datetime.utcnow()
+            dt = datetime.datetime.now(datetime.timezone.utc)
             ts = (dt.hour * 3600) + (dt.minute * 60) + dt.second
         
         # Move timestamp bit-16 into bit-7 of status byte 2
@@ -107,7 +107,7 @@ class Encoder(object):
     
     def _msgType10and20(self, msgid, status, addrType, address, latitude, longitude, altitude, misc, navIntegrityCat, navAccuracyCat, hVelocity, vVelocity, trackHeading, emitterCat, callSign, code):
         """construct message ID 10 or 20"""
-        msg = bytearray(chr(msgid))
+        msg = bytearray(msgid)
         
         b = ((status & 0xf) << 4) | (addrType & 0xf)
         msg.append(b)
@@ -118,13 +118,14 @@ class Encoder(object):
         
         msg.extend(self._pack24bit(self._makeLongitude(longitude)))
         
-        altitude = (int(altitude) + 1000) / 25
+        # Altitude is a positive integer value whose units are 25' increments offset by +1000 feet
+        altitude = int((altitude + 1000) / 25.0)
         if altitude < 0:  altitude = 0
         if altitude > 0xffe:  altitude = 0xffe
         
         # altitude is bits 15-4, misc code is bits 3-0
-        msg.append((altitude & 0xff0) >> 4)  # top 8 bits of altitude
-        msg.append( ((altitude & 0xf) << 4) | (misc & 0xf) )
+        msg.append((altitude & 0x0ff0) >> 4)  # top 8 bits of altitude
+        msg.append( ((altitude & 0x0f) << 4) | (misc & 0xf) )
         
         # nav int cat is top 4 bits, acc cat is bottom 4 bits
         msg.append( ((navIntegrityCat & 0xf) << 4) | (navAccuracyCat & 0xf) )
@@ -158,7 +159,7 @@ class Encoder(object):
         
         msg.append(emitterCat & 0xff)
         
-        callSign = str(callSign + " "*8)[:8]
+        callSign = bytearray(str(callSign + " "*8)[:8], 'ascii')
         msg.extend(callSign)
         
         # code is top 4 bits, bottom 4 bits are 'spare'
@@ -217,7 +218,7 @@ class Encoder(object):
     
     def msgStratuxHeartbeat(self, st1=0x02, ver=1):
         """message ID #204 for Stratux heartbeat"""
-        msg = bytearray(chr(0xcc))
+        msg = bytearray([0xCC])
         
         fmt = '>B'
         data = st1 & 0x03  # lower two bits only

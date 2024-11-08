@@ -6,14 +6,16 @@ import unittest
 
 from gdl90.encoder import Encoder
 
+
+def bytearray_as_hex_str(data):
+    """return a hex string representation of a bytearray"""
+    values = []
+    for byte in data:
+        values.append(hex(byte))
+    return "[%s]" % (",".join(values))
+
+
 class EncodingUtilChecks(unittest.TestCase):
-
-    def _as_hex_str(self, data):
-        values = []
-        for byte in data:
-            values.append(hex(byte))
-        return "[%s]" % (",".join(values))
-
 
     def test_escape_bytes(self):
         msg_encoder = Encoder()
@@ -30,7 +32,7 @@ class EncodingUtilChecks(unittest.TestCase):
         for (data, expected) in sample_data:
             expected = bytearray(expected)
             computed = msg_encoder._escape(data)
-            msg = "sequence %s does not match expected %s" % (self._as_hex_str(computed), self._as_hex_str(expected))
+            msg = "sequence %s does not match expected %s" % (bytearray_as_hex_str(computed), bytearray_as_hex_str(expected))
             self.assertEqual(computed, expected, msg=msg)
 
 
@@ -49,7 +51,7 @@ class EncodingUtilChecks(unittest.TestCase):
             expected = bytearray(data) + bytearray(crc)
             computed = bytearray(data)
             msg_encoder._addCrc(computed)
-            msg = "sequence %s does not match expected %s" % (self._as_hex_str(computed), self._as_hex_str(expected))
+            msg = "sequence %s does not match expected %s" % (bytearray_as_hex_str(computed), bytearray_as_hex_str(expected))
             self.assertEqual(computed, expected, msg=msg)
 
 
@@ -66,7 +68,7 @@ class EncodingUtilChecks(unittest.TestCase):
         for (data, expected) in sample_data:
             expected = bytearray(expected)
             computed = msg_encoder._preparedMessage(bytearray(data))
-            msg = "sequence %s does not match expected %s" % (self._as_hex_str(computed), self._as_hex_str(expected))
+            msg = "sequence %s does not match expected %s" % (bytearray_as_hex_str(computed), bytearray_as_hex_str(expected))
             self.assertEqual(computed, expected, msg=msg)
 
 
@@ -81,7 +83,7 @@ class EncodingUtilChecks(unittest.TestCase):
         for(input, expected) in sample_data:
             expected = bytearray(expected)
             computed = msg_encoder._pack24bit(input)
-            msg = "sequence %s for value 0x%06X does not match expected %s" % (self._as_hex_str(computed), input, self._as_hex_str(expected))
+            msg = "sequence %s for value 0x%06X does not match expected %s" % (bytearray_as_hex_str(computed), input, bytearray_as_hex_str(expected))
             self.assertEqual(computed, expected, msg=msg)
 
         # Check some illegal values
