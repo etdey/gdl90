@@ -71,7 +71,7 @@ class Decoder(object):
             
             # Look to see if we have an ending 0x7e marker yet
             try:
-                i = self.inputBuffer.index(chr(0x7e), 1)
+                i = self.inputBuffer.index(0x7e, 1)
             except ValueError:
                 # no end marker found yet
                 #self._log("no end marker found; leaving parser for now")
@@ -114,7 +114,7 @@ class Decoder(object):
             
             # remove everything up to first 0x7e or end of buffer
             try:
-                i = self.inputBuffer.index(chr(0x7e))
+                i = self.inputBuffer.index(0x7e)
                 #self._log("removing leading bytes before marker")
             except ValueError:
                 # did not find 0x7e, so blank the whole buffer
