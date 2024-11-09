@@ -107,7 +107,7 @@ class Encoder(object):
     
     def _msgType10and20(self, msgid, status, addrType, address, latitude, longitude, altitude, misc, navIntegrityCat, navAccuracyCat, hVelocity, vVelocity, trackHeading, emitterCat, callSign, code):
         """construct message ID 10 or 20"""
-        msg = bytearray(msgid)
+        msg = bytearray([msgid])
         
         b = ((status & 0xf) << 4) | (addrType & 0xf)
         msg.append(b)
