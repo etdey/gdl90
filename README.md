@@ -9,7 +9,7 @@ device for a listening client application.
 Unless otherwise stated in the included files, the files within this package
 are subject to the following copyright and license.
 
-> Copyright (c) 2016 Eric Dey
+> Copyright (c) 2016-2024 Eric Dey
 > 
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -32,15 +32,23 @@ are subject to the following copyright and license.
 
 ## Package Overview
 
-The package requires Python 2.6 or 2.7 and makes use of the Python Standard
-Library for all functions except where noted. The primary tool components are:
+The package requires a minimum of Python 3.8, has been tested with Python 3.13,
+and makes use of the Python Standard Library for all functions except where 
+noted. The primary tool components are:
 
-* gdl90_receiver.py -- _receives a live or recorded data stream from ADS-B hardware_
-* gld90_recorder.py -- _records the raw data stream from ADS-B hardware to file_
-* gld90_sender.py -- _sends a previously recorded data stream to network_
+* `gdl90_receiver.py` -- _receives a live or recorded data stream from ADS-B hardware_
+* `gld90_recorder.py` -- _records the raw data stream from ADS-B hardware to file_
+* `gld90_sender.py` -- _sends a previously recorded data stream to network_
 
 The `gdl90` subdirectory contains the libraries for decoding and encoding the
 GDL 90 and UAT messages.
+
+
+## Automated Tests
+
+The Python `unittest` framework is used for automated tests. All of 
+the unit tests can be executed with the `run_tests.sh` shell script 
+on Linux or MacOS.
 
 
 ## Receiver
