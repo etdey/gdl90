@@ -1,0 +1,9 @@
+#
+# Source control ignored files
+#
+
+# Python compiled files
+*.pyc
+
+# Mac resource files
+**/.DS_Store
