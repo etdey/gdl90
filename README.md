@@ -51,13 +51,34 @@ the unit tests can be executed with the `run_tests.sh` shell script
 on Linux or MacOS.
 
 
-## Receiver
+## Utilities
+
+This is a description of the utilities that accompany and use the GDL 90 library. These utilities make use of external Python packages, so pay attention to the environment setup.
+
+
+### Python Environment Setup
+
+See the `requirements.txt` file a list of required external packages. The setup step are:
+
+1. (Optional) Python virtual environment setup
+    1. Install [venv](https://docs.python.org/3/library/venv.html): `pip3 install venv`
+    1. Setup within source tree: `python3 -m venv .venv`
+1. (Optional) Activate the venv: `source .venv/bin/activate`
+1. Install dependencies: `pip3 install -r requirements.txt`
+
+If you install the dependencies within a Python virtual environment, you will need to _activate_ it each time that you will use one of the utilities that depend upon them. Once you are finished with the virtual environment, you can terminiate it with the `deactivate` command.
+
+If you are completely finished with the virtual environment, make sure it is deactivated and then you can simply remove the `.venv` directory tree.
+
+
+### Receiver
 
 The receiver can be used decode a live data stream or process a recorded GLD 90
 file. The output is a line-by-line decoding of the individual message types,
 including the optional UAT messages, or a compact text record format that
 allows for automated processing.
 
+#### Usage
 ```
 $ ./gdl90_receiver.py --help
 Usage: gdl90_receiver.py {requiredOptions} [otherOptions]
@@ -82,47 +103,30 @@ Options:
     --uat               output UAT messages
 ```
 
+Example usage:
+```
+$ ./gdl90_receiver.py -i skyradar.20121028.001 --plotflight > ../KML/PlotFlight/skyradar.track.20121028.001.txt
+```
+
+#### Time Keeping
+
 The decoding library makes use of a non-standard MSG101 from the SkyRadar
 hardware for time-of-day (hh:mm) since the MSG00 timestamp is not usable as
 defined in the GDL 90 protocol. Since seconds information is not available when
 using the SkyRadar hardware, the decoding library self-corrects its internal
 estimation of the number of seconds past the minute as messages are received.
 
-Example usage:
-```
-$ ./gdl90_receiver.py -i skyradar.20121028.001 --plotflight > ../KML/PlotFlight/skyradar.track.20121028.001.txt
-```
 
 
-## Recorder
+### Recorder
 
 The recorder captures the raw data stream from an ADS-B device and saves it to
 a file. It is designed to be run within a device like the RaspberryPi attached
 to a wifi network within an aircraft. The raw files are later downloaded and
 processed by the `gdl90_receiver.py` program.
 
-The recorder has a dependency on the `netifaces` package for Python. This can
-be installed on your target system with the command:
 
-```
-sudo pip install netifaces
-```
-
-When running the recorder in a head-less device like the RPi, this should be
-run as root with the ability to automatically start and restart. An
-`/etc/inittab` entry such as this accomplishes these needs:
-
-```
-#Run GDL90 recorder
-fdr1:23:respawn:/usr/bin/python /root/gdl90_recorder.py --slowexit
-```
-
-The `--slowexit` option should be used when running from inittab in order to
-prevent init from disabling respawns at boot time when the wifi network is
-still initializing. Until a valid network interface exists, the recorder will
-exit and needs to be restarted.
-
-
+#### Usage
 ```
 $ ./gdl90_recorder.py --help
 Usage: gdl90_recorder.py {requiredOptions} [otherOptions]
@@ -146,8 +150,43 @@ Options:
     --rebroadcast=name  rebroadcast interface (default=off)
 ```
 
+#### Automatic Startup
 
-## Sender
+When running the recorder in a head-less device like the RPi, this should be
+run as root with the ability to automatically start and restart. 
+
+##### Systemd
+This is the most commonly used startup system on Linux distributions since about 2015. For automatic startup at boot, do the following as root:
+
+1. Edit the configuration items in the `gdl90_service_wrapper` file.
+1. Copy service unit file: `cp gdl90.service /etc/systemd/system/.`
+1. Reload systemd configuration: `systemctl daemon-reload`
+1. Start the GDL 90 service: `systemctl start gdl90`
+1. Confirm operation: `systemctl status gdl90`
+
+The service wrapper is used by the gdl90.service unit and systemd for start/stop/restart operations. You should edit the following items based on your system's network and install path:
+```
+NETWORK_DEV=wlan0
+LISTEN_PORT=4000
+ADSB_DIRECTORY=/root/adsb
+```
+
+##### Init
+This is less common on newer Linux systems. For automatic startup at boot, you will add an  
+`/etc/inittab` entry such as this:
+
+```
+#Run GDL90 recorder
+fdr1:23:respawn:/usr/bin/python3 /root/gdl90_recorder.py --slowexit
+```
+
+The `--slowexit` option should be used when running from inittab in order to
+prevent init from disabling respawns at boot time when the wifi network is
+still initializing. Until a valid network interface exists, the recorder will
+exit and needs to be restarted.
+
+
+### Sender
 
 The sender is useful for replaying a previously recorded data stream from an
 ADS-B hardware device. This can be used for testing an application or the
@@ -173,4 +212,3 @@ Options:
                         packet size (default=50)
     --delay=MSEC        time between packets (default=10)
 ```
-
