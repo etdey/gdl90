@@ -169,6 +169,7 @@ def _record(options):
             logFile.write(data)
             
             # Ensure periodic flush to disk
+            # TODO: This doesn't work because sockIn.recvfrom() blocks
             if int(time.time() - lastFlushTime) > options.dataflush:
                 logFile.flush()
                 os.fsync(logFile.fileno())
