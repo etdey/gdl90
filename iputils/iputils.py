@@ -121,6 +121,7 @@ class IPUtils(object):
         return tuple([netmask, hostmask])
 
 
+# Namedtuple that holds network details for an interface
 IPInterface = namedtuple('IPInterface', 'name ip netmask broadcast netmask_bits')
 
 class Interfaces(object):
