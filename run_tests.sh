@@ -17,4 +17,4 @@ else
     echo "Using Python: $PYTHON"
 fi
 
-$PYTHON -m unittest discover -v */tests
+$PYTHON -m unittest discover -v -p 'test_*.py'
