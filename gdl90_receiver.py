@@ -4,30 +4,21 @@
 
 This program implements a receiver of the GDL-90 data link interface.
 
-This depends upon the 'netifaces' package in order to get information about
-the hosts network interfaces. It is installed with:
-  # apt-get install python-pip
-  # pip install netifaces
 """
 
 __progTitle__ = "GDL-90 Receiver"
 
 __author__ = "Eric Dey <eric@deys.org>"
 __created__ = "August 2012"
-__copyright__ = "Copyright (C) 2018 by Eric Dey"
+__copyright__ = "Copyright (C) 2024 by Eric Dey"
 
-__version__ = "0.2"
-__date__ = "16-NOV-2018"
+__version__ = "0.3"
+__date__ = "DEC-2024"
 
 
-import os, sys, time, datetime, re, optparse, socket, struct, traceback
+import os, sys, datetime, re, optparse, socket
 import gdl90.decoder
-
-try:
-    import netifaces
-except ImportError:
-    sys.stderr.write("ERROR: could not import 'netifaces' package; use 'pip install netifaces' to add it\n")
-    sys.exit(1)
+from iputils.iputils import Interfaces
 
 
 # Default values for options
@@ -42,20 +33,13 @@ EXIT_CODE = {
     "OTHER" : 99,
 }
 
+# Network interface singleton
+NetIfaces = Interfaces()
+
 
 def print_error(msg):
-    """print an error message"""
+    """print to stderr"""
     print(msg, file=sys.stderr)
-
-
-def _isNumeric(n):
-    """test if 'n' can be converted for use in numeric calculations"""
-    try:
-        b = float(n)
-        return True
-    except:
-        pass
-    return False
 
 
 def _options_okay(options):
@@ -65,8 +49,7 @@ def _options_okay(options):
     if int(options.port) <=0 or int(options.port) >=65536:
         errors = True
         print_error("Argument '--port' must between 1 and 65535")
-            
-    
+        
     return not errors
 
 
@@ -77,7 +60,7 @@ def _get_progVersion():
 
 def _getTimeStamp():
     """create a time stamp string"""
-    return datetime.datetime.utcnow().isoformat(' ')
+    return datetime.datetime.now(datetime.timezone.utc).isoformat(' ')
 
 
 def _extractSvnKeywordValue(s):
@@ -91,6 +74,8 @@ def _receive(options):
     """receive packets"""
 
     decoder = gdl90.decoder.Decoder()
+
+    options.listen_ip = None  # used when receiving from network not a file
     
     if options.date:
         (year, month, day) = options.date.split("-")
@@ -110,18 +95,27 @@ def _receive(options):
         s = open(options.inputfile, "rb")
     else:
         useNetwork = True
-        try:
-            if options.subnetbcast:
-                listenIP = netifaces.ifaddresses(options.interface)[netifaces.AF_INET][0]['broadcast']
-            elif options.bcast:
-                listenIP = '<broadcast>'
-            else:
-                listenIP = ''
-        except KeyError as e:
-            sys.stderr.write("ERROR: error getting network details for '%s' %s\n" % (options.interface,e))
-            sys.exit(1)
+
+        # use a specific interface, subnet broadcast, or global broadcast
+        iface = NetIfaces.ipv4_details_by_name(options.interface)
+        if iface is None:
+            print_error("Receive interface %s does not have an IP address" % (options.interface))
+            sys.exit(EXIT_CODE['OTHER'])
+
+        if options.subnetbcast:
+            # subnet broadcast (e.g., x.y.z.255)
+            options.listen_ip = iface.broadcast
+        
+        elif options.bcast:
+            # global broadcast 255.255.255.255
+            options.listen_ip = '<broadcast>'  # special meaning for socket.socket.bind()
+
+        else:
+            # adapter's IP address (i.e., unicast)
+            options.listen_ip = iface.ip
+
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.bind((listenIP, options.port))
+        s.bind((options.listen_ip, options.port))
     
     packetTotal = 0
     
@@ -153,9 +147,9 @@ if __name__ == '__main__':
 
     # get default network interface device
     try:
-        def_interface = netifaces.interfaces()[1]
+        def_interface = NetIfaces.ipv4_all_interfaces()[0]
     except IndexError:
-        def_interface = netifaces.interfaces()[0]   # loopback device
+        def_interface = NetIfaces.ipv4_all_interfaces(include_loopback=True)[0]  # loopback device
     
     # Get name of program from command line or else use embedded default
     progName = os.path.basename(sys.argv[0])
