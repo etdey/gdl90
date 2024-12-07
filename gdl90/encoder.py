@@ -85,7 +85,7 @@ class Encoder(object):
         
         # Move timestamp bit-16 into bit-7 of status byte 2
         ts_bit16 = (ts & 0x10000) >> 16
-        st2 = (st2 & 0b0111111) | (ts_bit16 << 7)
+        st2 = (st2 & 0b01111111) | (ts_bit16 << 7)
         
         msg = bytearray([0x00])
         msg.extend(struct.pack('>BB', st1, st2))  # status bytes
