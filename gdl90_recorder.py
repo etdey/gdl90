@@ -155,6 +155,9 @@ def _record(options):
             (saddr, sport) = dataSrc
             packetTotal += 1
             bytesTotal += len(data)
+
+            if options.verbose and (packetTotal % 100) == 0:
+                print_error("[%s packets received at %s]" % (packetTotal, options.listen_ip))
             
             #optionally rebroadcast onto another network
             if sockOut is not None:

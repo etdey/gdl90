@@ -115,6 +115,9 @@ def _receive(options):
             options.listen_ip = iface.ip
 
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if options.verbose:
+            print_error("Listening on interface %s at address %s on port %s" % (options.interface, options.listen_ip, options.port))
         s.bind((options.listen_ip, options.port))
     
     packetTotal = 0
