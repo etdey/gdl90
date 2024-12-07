@@ -5,7 +5,6 @@
 """UAT Message Decoder functions"""
 
 from collections import namedtuple
-from pprint import pprint
 
 CHAR_ETX = chr(3)
 CHAR_RS = chr(30)
@@ -44,7 +43,8 @@ DLAC2StrTable = [
     CHAR_NULL,  # 27  Null
     '....',  # 28  Tab
     CHAR_RS,  # 29  Record Separator
-    '%s%s' % (CHAR_CR, CHAR_LF),  # 30  CR+LF
+    # '%s%s' % (CHAR_CR, CHAR_LF),  # 30  CR+LF
+    '\n', # 30 newline
     CHAR_NULL,  # 31  Change-Cipher (treated as Null)
     ' ',  # 32
     '!',  # 33
@@ -169,7 +169,7 @@ def dlac2string(msgIn):
         assert(d >= 0 and d <= 63)
         msgOutChars.append(DLAC2StrTable[d])
         m += 1
-    return(b"".join(msgOutChars))
+    return("".join(msgOutChars))
 
     
 

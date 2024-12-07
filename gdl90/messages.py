@@ -7,9 +7,9 @@
 from collections import namedtuple
 
 def _parseHeartbeat(msgBytes:bytearray) -> namedtuple:
-    """GDL90 message type 0x00"""
+    """GDL90 message type 0"""
     assert len(msgBytes) == 7
-    assert msgBytes[0] == 0x00
+    assert msgBytes[0] == 0
     msg = namedtuple('Heartbeat', 'MsgType StatusByte1 StatusByte2 TimeStamp MessageCounts')
     fields = ['Heartbeat']
     
@@ -30,9 +30,9 @@ def _parseHeartbeat(msgBytes:bytearray) -> namedtuple:
 
 
 def _parseUplinkData(msgBytes:bytearray) -> namedtuple:
-    """GDL90 message type 0x07"""
+    """GDL90 message type 7"""
     assert len(msgBytes) == 436
-    assert msgBytes[0] == 0x07
+    assert msgBytes[0] == 7
     msg = namedtuple('UplinkData', 'MsgType TimeOfReception Header Data')
     fields = ['UplinkData']
     
@@ -44,17 +44,17 @@ def _parseUplinkData(msgBytes:bytearray) -> namedtuple:
 
 
 def _parseOwnshipReport(msgBytes:bytearray) -> namedtuple:
-    """GDL90 message type 0x0A"""
+    """GDL90 message type 10"""
     assert len(msgBytes) == 28
-    assert msgBytes[0] == 0x0a
+    assert msgBytes[0] == 10
     msg = namedtuple('OwnshipReport', 'MsgType Status Type Address Latitude Longitude Altitude Misc NavIntegrityCat NavAccuracyCat HVelocity VVelocity TrackHeading EmitterCat CallSign Code')
     return msg._make(_parseMessageType10and20('OwnshipReport', msgBytes))
 
 
 def _parseOwnshipGeometricAltitude(msgBytes:bytearray) -> namedtuple:
-    """GDL90 message type 0x0B"""
+    """GDL90 message type 11"""
     assert len(msgBytes) == 5
-    assert msgBytes[0] == 0x0b
+    assert msgBytes[0] == 11
     msg = namedtuple('OwnshipGeometricAltitude', 'MsgType Altitude VerticalMetrics')
     fields = ['OwnshipGeometricAltitude']
     
@@ -65,9 +65,9 @@ def _parseOwnshipGeometricAltitude(msgBytes:bytearray) -> namedtuple:
 
 
 def _parseTrafficReport(msgBytes:bytearray) -> namedtuple:
-    """GDL90 message type 0x14"""
+    """GDL90 message type 20"""
     assert len(msgBytes) == 28
-    assert msgBytes[0] == 0x14
+    assert msgBytes[0] == 20
     msg = namedtuple('TrafficReport', 'MsgType Status Type Address Latitude Longitude Altitude Misc NavIntegrityCat NavAccuracyCat HVelocity VVelocity TrackHeading EmitterCat CallSign Code')
     return msg._make(_parseMessageType10and20('TrafficReport', msgBytes))
 
@@ -122,20 +122,21 @@ def _parseMessageType10and20(msgType:str, msgBytes:bytearray) -> namedtuple:
     return fields
 
 
-def _parseGpsTime(msgBytes:bytearray) -> namedtuple:
-    """GDL90 message type 0x65"""
+def _parseSkyradarGpsTime(msgBytes:bytearray) -> namedtuple:
+    """GDL90 message type 101 from Skyradar"""
     assert len(msgBytes) == 12
-    assert msgBytes[0] == 0x65
+    assert msgBytes[0] == 101
     msg = namedtuple('GpsTime', 'MsgType Hour Minute Waas')
     fields = ['GpsTime']
     
     fields.append(msgBytes[7]) # UTC hour
     fields.append(msgBytes[8]) # UTC minute
 
+    # GPS fix quality: 0=no fix, 1=regular, 2=waas
     waas = None
-    if msgBytes[3] == ord('1'):
+    if msgBytes[3] == 0x31:  # '1'
         waas = False
-    elif msgBytes[3] == ord('2'):
+    elif msgBytes[3] == 0x32:  # '2'
         waas = True
     fields.append(waas)
     
@@ -225,12 +226,12 @@ def _thunkByte(byte:int, mask:int=0xff, shift:int=0) -> int:
 
 
 MessageIDMapping = {
-    0x00 : _parseHeartbeat,
-    0x07 : _parseUplinkData,
-    0x0a : _parseOwnshipReport,
-    0x0b : _parseOwnshipGeometricAltitude,
-    0x14 : _parseTrafficReport,
-    0x65 : _parseGpsTime,
+    0   : _parseHeartbeat,
+    7   : _parseUplinkData,
+    10  : _parseOwnshipReport,
+    11  : _parseOwnshipGeometricAltitude,
+    20  : _parseTrafficReport,
+    101 : _parseSkyradarGpsTime,
 }
 
 
