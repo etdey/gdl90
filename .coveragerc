@@ -1,0 +1,9 @@
+[run]
+cover_pylib = False
+omit =
+    # unit test files
+    **/tests/*.py
+    # system packages
+    /usr/**
+    # virtual environment packages
+    .venv/**

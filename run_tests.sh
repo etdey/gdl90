@@ -17,4 +17,13 @@ else
     echo "Using Python: $PYTHON"
 fi
 
-$PYTHON -m unittest discover -v -p 'test_*.py'
+# generate code coverage report with optional 'coverage' package
+PYCODE_COVERAGE=""
+$PYTHON -m coverage &> /dev/null
+if [[ $? -eq 0 ]]; then
+    PYCODE_COVERAGE="-m coverage run"
+    echo "To see code coverage, run: $PYTHON -m coverage report"
+fi
+
+$PYTHON $PYCODE_COVERAGE -m unittest discover -v -p 'test_*.py'
+
