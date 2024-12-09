@@ -7,3 +7,10 @@
 
 # Mac resource files
 **/.DS_Store
+
+# Python virtual environments
+/.venv/**
+/.venv-*/**
+
+# Python 'coverage' package's database
+/.coverage
