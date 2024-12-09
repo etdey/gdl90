@@ -95,12 +95,12 @@ class Encoder(object):
         return(self._preparedMessage(msg))
     
     
-    def msgOwnshipReport(self, status=0, addrType=0, address=0, latitude=0.0, longitude=0.0, altitude=0, misc=9, navIntegrityCat=8, navAccuracyCat=8, hVelocity=None, vVelocity=None, trackHeading=0, emitterCat=1, callSign='', code=0):
+    def msgOwnshipReport(self, status=0, addrType=0, address=0, latitude=0.0, longitude=0.0, altitude=0, misc=9, navIntegrityCat=11, navAccuracyCat=11, hVelocity=None, vVelocity=None, trackHeading=0, emitterCat=1, callSign='', code=0):
         """message ID #10"""
         return(self._msgType10and20(10, status, addrType, address, latitude, longitude, altitude, misc, navIntegrityCat, navAccuracyCat, hVelocity, vVelocity, trackHeading, emitterCat, callSign, code))
     
     
-    def msgTrafficReport(self, status=0, addrType=0, address=0, latitude=0.0, longitude=0.0, altitude=0, misc=9, navIntegrityCat=8, navAccuracyCat=8, hVelocity=None, vVelocity=None, trackHeading=0, emitterCat=1, callSign='', code=0):
+    def msgTrafficReport(self, status=0, addrType=0, address=0, latitude=0.0, longitude=0.0, altitude=0, misc=9, navIntegrityCat=11, navAccuracyCat=11, hVelocity=None, vVelocity=None, trackHeading=0, emitterCat=1, callSign='', code=0):
         """message ID #20"""
         return(self._msgType10and20(20, status, addrType, address, latitude, longitude, altitude, misc, navIntegrityCat, navAccuracyCat, hVelocity, vVelocity, trackHeading, emitterCat, callSign, code))
     
@@ -170,7 +170,7 @@ class Encoder(object):
     
     def msgOwnshipGeometricAltitude(self, altitude=0, merit=50, warning=False):
         """message ID #11"""
-        msg = bytearray(chr(0x0b))
+        msg = bytearray([0x0b])
         
         # Convert altitude to 5ft increments
         altitude = int(altitude / 5)
@@ -195,11 +195,11 @@ class Encoder(object):
     
     def msgGpsTime(self, count=0, quality=2, hour=None, minute=None):
         """message ID #101 for Skyradar"""
-        msg = bytearray(chr(0x65))
+        msg = bytearray([0x65])
         
         msg.append(0x2a) # firmware version
         msg.append(0) # debug data
-        msg.append(chr((0x30 + quality) & 0xff))  # GPS quality: '0'=no fix, '1'=regular, '2'=DGPS (WAAS)
+        msg.append((0x30 + quality) & 0xff)  # GPS quality: '0'=no fix, '1'=regular, '2'=DGPS (WAAS)
         msg.extend(struct.pack('<I',count)[:-1])  # use first three LSB bytes only
         
         if hour is None or minute is None:
@@ -231,9 +231,12 @@ class Encoder(object):
     def msgSXHeartbeat(self, fv=0x0011, hv=0x0001, st1=0x02, st2=0x01, satLock=0, satConn=0, num978=0, num1090=0, rate978=0, rate1090=0, cpuTemp=0, towers=[]):
         """message ID #29 for Hiltonsoftware SX heartbeat"""
         
-        msg = bytearray(chr(0x1d))
-        fmt = '>ccBBLLHHBBHHHHHB'
-        msg.extend(struct.pack(fmt,'S','X',1,1,fv,hv,st1,st2,satLock,satConn,num978,num1090,rate978,rate1090,cpuTemp,len(towers)))
+        msg = bytearray([0x1d])
+        # fmt = '>ccBBLLHHBBHHHHHB'
+        fmt = '>BBBBLLHHBBHHHHHB'
+        CHAR_S = ord('S')
+        CHAR_X = ord('X')
+        msg.extend(struct.pack(fmt,CHAR_S,CHAR_X,1,1,fv,hv,st1,st2,satLock,satConn,num978,num1090,rate978,rate1090,cpuTemp,len(towers)))
 
         for tower in towers:
             (lat, lon) = tower[0:2]
@@ -243,18 +246,22 @@ class Encoder(object):
         return(self._preparedMessage(msg))
 
 
-    def msgForeFlightMessage101(self, subId=0, mv=1, sn=None, nameShort="Stratux", nameLong="gdl90-encoder", capmask=1):
-        """message ID #101 for ForeFlight"""
+    def msgForeFlightMessage101(self, sn=None, nameShort="Stratux", nameLong="gdl90-encoder", capmask=1):
+        """message ID #101 for ForeFlight; see https://www.foreflight.com/connect/spec/"""
         
-        if sn is None:
-            sn = chr(0xff)*8
-        else:
-            sn = str(sn + " "*8)[:8]
-        nameShort = str(nameShort + " "*8)[:8]
-        nameLong = str(nameLong + " "*16)[:16]
+        subId = 0   # required value
+        mv = 1  # required value
 
-        msg = bytearray(chr(0x65))
-        fmt = '>BB8s8s16sB'
+        if sn is None:
+            sn = bytes([0xff]*8)
+        else:
+            sn = bytes((sn + " "*8)[:8], 'ascii')
+        
+        nameShort = bytes((nameShort + " "*8)[:8], 'ascii')
+        nameLong = bytes((nameLong + " "*16)[:16], 'ascii')
+
+        msg = bytearray([0x65])
+        fmt = '>BB8s8s16sL'
         msg.extend(struct.pack(fmt, subId, mv, sn, nameShort, nameLong, capmask))
 
         return(self._preparedMessage(msg))
