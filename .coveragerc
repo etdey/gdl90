@@ -7,3 +7,4 @@ omit =
     /usr/**
     # virtual environment packages
     .venv/**
+    .venv-*/**
