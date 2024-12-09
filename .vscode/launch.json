@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Python Debugger: Run current file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}"
+        },
+        {
+            "name": "Simulate GDL90 Unit: subnet broadcast",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "simulate_gdl90_unit.py",
+            "args": ["--altitudeDelta=0", "10.1.1.255"]
+        }
+    ]
+}

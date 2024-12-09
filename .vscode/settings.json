@@ -1,0 +1,12 @@
+{
+    "python.testing.unittestArgs": [
+        "discover",
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "test_*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+}
