@@ -8,7 +8,7 @@ Push-Location $(Split-Path -Path $MyInvocation.MyCommand.Definition -Parent)
 # Test for python
 $PYTHON = Get-Command -ErrorAction SilentlyContinue "python"
 If (-not $PYTHON) {
-    Write-Host "Cannot find an appropriate Python version"
+    Write-Host "Cannot find Python interpreter"
     Pop-Location
     Exit 1
 } Else {

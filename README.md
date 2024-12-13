@@ -48,7 +48,8 @@ GDL 90 and UAT messages.
 
 The Python `unittest` framework is used for automated tests. All of 
 the unit tests can be executed with the `run_tests.sh` shell script 
-on Linux or MacOS.
+on Linux or MacOS, or with the `run_tests.ps1` PowerShell script on
+Windows.
 
 
 ## Utilities
@@ -65,6 +66,7 @@ See the `requirements.txt` file a list of required external packages. The setup 
     1. Setup within source tree: `python3 -m venv .venv`
 1. (Optional) Activate the venv: `source .venv/bin/activate`
 1. Install dependencies: `pip3 install -r requirements.txt`
+1. (Optional) Install code coverage package: `pip3 install coverage`
 
 If you install the dependencies within a Python virtual environment, you will need to _activate_ it each time that you will use one of the utilities that depend upon them. Once you are finished with the virtual environment, you can terminiate it with the `deactivate` command.
 
