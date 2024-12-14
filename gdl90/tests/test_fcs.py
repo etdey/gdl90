@@ -64,6 +64,9 @@ class CRCChecks(unittest.TestCase):
             test_str = self._as_hex_str(test)
             msg = "input=%s should fail validation" % (test_str)
             self.assertFalse(crcCheck(test, crc), msg=msg)
+        (test, crc) = self.bad_values[0]
+        self.assertRaises(Exception, crcCheck, test, [0x01])  # crc too short
+        self.assertRaises(Exception, crcCheck, test, [0x01,0x02,0x03])  # crc too long
 
 
     def test_crc_table(self):

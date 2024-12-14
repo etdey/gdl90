@@ -51,6 +51,7 @@ class NetworkUtils(unittest.TestCase):
         self.assertEqual(IPUtils.ipv4_broadcast_addr('1.2.3.4', 8), '1.255.255.255')
         self.assertEqual(IPUtils.ipv4_broadcast_addr('11.22.33.44', 22), '11.22.35.255')
         # negative tests
+        self.assertRaises(ValueError, IPUtils.ipv4_broadcast_addr, '300.2.3.4', 24)
         self.assertRaises(ValueError, IPUtils.ipv4_broadcast_addr, '1.2.3.4', -1)
         self.assertRaises(ValueError, IPUtils.ipv4_broadcast_addr, '1.2.3.4', 33)
 
@@ -59,6 +60,8 @@ class NetworkUtils(unittest.TestCase):
         self.assertEqual(IPUtils.ipv4_network_addr('1.2.3.4', 16), '1.2.0.0')
         self.assertEqual(IPUtils.ipv4_network_addr('1.2.3.4', 8), '1.0.0.0')
         self.assertEqual(IPUtils.ipv4_network_addr('11.22.33.44', 22), '11.22.32.0')
+        # negative tests
+        self.assertRaises(ValueError, IPUtils.ipv4_network_addr, '300.2.3.4', 24)
 
     def test_ipv4_network_mask(self):
         self.assertEqual(IPUtils.ipv4_network_mask(24), '255.255.255.0')
@@ -68,5 +71,15 @@ class NetworkUtils(unittest.TestCase):
         # negative tests
         self.assertRaises(ValueError, IPUtils.ipv4_network_mask, 33)
         self.assertRaises(ValueError, IPUtils.ipv4_network_mask, -1)
+
+    def test_ipv4_multicast_addr(self):
+        self.assertTrue(IPUtils.is_ipv4_multicast('224.0.100.200'))
+        self.assertTrue(IPUtils.is_ipv4_multicast('233.252.100.200'))
+        self.assertTrue(IPUtils.is_ipv4_multicast('239.255.100.200'))
+        # negative tests
+        self.assertFalse(IPUtils.is_ipv4_multicast('223.255.255.255'))
+        self.assertFalse(IPUtils.is_ipv4_multicast('240.0.0.0'))
+        self.assertFalse(IPUtils.is_ipv4_multicast('224.0.0'))
+
 
 
