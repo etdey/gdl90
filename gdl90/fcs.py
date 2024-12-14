@@ -78,7 +78,7 @@ def crcCompute(data:bytearray) -> bytearray:
 
 
 def crcCheck(data:bytearray, crcInput:bytearray) -> bool:
-    """check the CRC value of the data block again a given input value
+    """check the CRC value of a data block and it's given CRC input
     @data : data block (usually a bytearray)
     @crcInput : sequence of 0-255 values (length two)
     """
@@ -91,37 +91,3 @@ def crcCheck(data:bytearray, crcInput:bytearray) -> bool:
         if crcInput[i] != crcCalc[i]:
             return False
     return True
-
-
-
-if __name__ == '__main__':
-    
-    print("CRC16Table = (")
-    i = 0
-    crc16table = createCRC16Table()
-    for row in range(32):
-        rowStr = "    "
-        for col in range(8):
-            rowStr += "0x%04x, " % (crc16table[i])
-            i += 1
-        print(rowStr)
-    print(")")
-    
-    testDataBlocks = [
-        ([0x00, 0x81, 0x41, 0xDB, 0xD0, 0x08, 0x02], [0xb3, 0x8b]),
-        ([0x00, 0x81, 0x00, 0x28, 0xc9, 0x01, 0x00], [0xa6, 0x6d]),
-        ([0x0b, 0x00, 0x69, 0x00, 0x32], [0x4c, 0x0d]),
-        ([0x0a, 0x00, 0x00, 0x00, 0x00, 0x15, 0x76, 0x78, 0xba, 0x8d, 0x1f, 0x03, 0xb9, 0x88, 0x00, 0x00, 0x00, 0xa8, 0x01, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00], [0x97, 0x33]),
-    ]
-    i = 0
-    for (block, crck) in testDataBlocks:
-        testdata = bytearray()
-        for n in block:
-            testdata.append(n)
-    
-        if crcCheck(block, crck):
-            print("Test #%d: PASS" % (i))
-        else:
-            crc = crcCompute(testdata)
-            print("Test #%d: FAIL ; Reference CRC = 0x%02x%02x, Computed CRC = 0x%02x%02x" % (i, crck[0], crck[1], crc[0], crc[1]))
-        i += 1
