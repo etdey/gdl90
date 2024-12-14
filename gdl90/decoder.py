@@ -33,7 +33,7 @@ class Decoder(object):
         
         # setup internal time tracking
         self.gpsTimeReceived = False
-        self.dayStart = None
+        self.dayStart = datetime.date.today()  # client apps SHOULD set this
         self.currtime = datetime.datetime.now(datetime.timezone.utc)
         self.heartbeatInterval = datetime.timedelta(seconds=1)
     
@@ -43,6 +43,9 @@ class Decoder(object):
         self.inputBuffer.extend(data)
         self._parseMessages()
     
+    def _bytearrayToHexStrList(self, data):
+        """returns a python list compatible str form of a bytearray"""
+        return ','.join(['0x{0:02X}'.format(n) for n in data])
     
     def _log(self, msg):
         sys.stderr.write('decoder.Decoder:' + msg + '\n')
@@ -173,6 +176,11 @@ class Decoder(object):
         if not m:
             return False
         
+        # Debugging for raw message data
+        # print("")
+        # print(m)
+        # print("raw msg: ", self._bytearrayToHexStrList(escapedMessage))
+
         if m.MsgType == 'Heartbeat':
             self.currtime += self.heartbeatInterval
             if self.format == 'normal':
@@ -185,7 +193,7 @@ class Decoder(object):
                 if m.NavIntegrityCat == 0 or m.NavIntegrityCat == 1:  # unknown or <20nm, consider it invalid
                     pass
             elif self.format == 'normal':
-                print('MSG10: %0.7f %0.7f %d %d %d' % (m.Latitude, m.Longitude, m.HVelocity, m.Altitude, m.TrackHeading))
+                print('MSG10: %0.10f %0.10f %d %d %d' % (m.Latitude, m.Longitude, m.HVelocity, m.Altitude, m.TrackHeading))
             elif self.format == 'plotflight':
                 if self.altitudeAge < self.altitudeMaxAge:
                     altitude = self.altitude
@@ -196,7 +204,7 @@ class Decoder(object):
                 # Must have the GPS time from a message 101 before outputting anything
                 if not self.gpsTimeReceived:
                     return True
-                print('%02d:%02d:%02d %0.7f %0.7f %d %d %d' % (self.currtime.hour, self.currtime.minute, self.currtime.second, m.Latitude, m.Longitude, m.HVelocity, altitude, m.TrackHeading))
+                print('%02d:%02d:%02d %0.10f %0.10f %d %d %d' % (self.currtime.hour, self.currtime.minute, self.currtime.second, m.Latitude, m.Longitude, m.HVelocity, altitude, m.TrackHeading))
         
         elif m.MsgType == 'OwnshipGeometricAltitude':
             if self.format == 'normal':
@@ -209,7 +217,7 @@ class Decoder(object):
             if m.Latitude == 0.00 and m.Longitude == 0.00 and m.NavIntegrityCat == 0:  # no valid position
                 pass
             elif self.format == 'normal':
-                print('MSG20: %0.7f %0.7f %d %d %d %d %s' % (m.Latitude, m.Longitude, m.HVelocity, m.VVelocity, m.Altitude, m.TrackHeading, m.CallSign))
+                print('MSG20: %0.10f %0.10f %d %d %d %d %s' % (m.Latitude, m.Longitude, m.HVelocity, m.VVelocity, m.Altitude, m.TrackHeading, m.CallSign))
         
         elif m.MsgType == 'GpsTime':
             if not self.gpsTimeReceived:
