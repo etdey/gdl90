@@ -124,23 +124,40 @@ def _parseMessageType10and20(msgType:str, msgBytes:bytearray) -> namedtuple:
 
 def _parseSkyradarGpsTime(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 101 from Skyradar"""
-    assert len(msgBytes) == 12
+    # Check minimum length instead of exact length
+    if len(msgBytes) < 9:  # Need at least 9 bytes for hour, minute, and waas check
+        return None
+    
     assert msgBytes[0] == 101
     msg = namedtuple('GpsTime', 'MsgType Hour Minute Waas')
     fields = ['GpsTime']
     
-    fields.append(msgBytes[7]) # UTC hour
-    fields.append(msgBytes[8]) # UTC minute
+    # Check if this matches the expected Skyradar format
+    if len(msgBytes) >= 14 and msgBytes[1] == 0x2A:  # Expected Skyradar format
+        # Use safe indexing with bounds checking and validate time values
+        hour = msgBytes[7] if len(msgBytes) > 7 else 0
+        minute = msgBytes[8] if len(msgBytes) > 8 else 0
+        
+        # Validate time values
+        if hour > 23 or minute > 59:
+            return None
+        
+        fields.append(hour) # UTC hour
+        fields.append(minute) # UTC minute
 
-    # GPS fix quality: 0=no fix, 1=regular, 2=waas
-    waas = None
-    if msgBytes[3] == 0x31:  # '1'
-        waas = False
-    elif msgBytes[3] == 0x32:  # '2'
-        waas = True
-    fields.append(waas)
-    
-    return msg._make(fields)
+        # GPS fix quality: 0=no fix, 1=regular, 2=waas
+        waas = None
+        if len(msgBytes) > 3:
+            if msgBytes[3] == 0x31:  # '1'
+                waas = False
+            elif msgBytes[3] == 0x32:  # '2'
+                waas = True
+        fields.append(waas)
+        
+        return msg._make(fields)
+    else:
+        # Unknown message 101 format - skip processing silently
+        return None
 
 
 def _unsigned24(data:bytearray, littleEndian:bool=False) -> int:
@@ -243,4 +260,6 @@ def messageToObject(data):
     if not msgId in list(MessageIDMapping.keys()):
         return None
     msgObj = MessageIDMapping[msgId](data)
+    if msgObj is None:
+        return None
     return msgObj
