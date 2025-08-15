@@ -36,7 +36,7 @@ def _parseUplinkData(msgBytes:bytearray) -> namedtuple:
     msg = namedtuple('UplinkData', 'MsgType TimeOfReception Header Data')
     fields = ['UplinkData']
     
-    fields.append(_unsigned24(msgBytes[1:], littleEndian=True))
+    fields.append(_unsigned24(msgBytes[1:4], littleEndian=True))
     fields.append(msgBytes[4:12]) ;# UAT header
     fields.append(msgBytes[12:]) ;# data
     
