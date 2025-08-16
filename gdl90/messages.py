@@ -122,15 +122,36 @@ def _parseMessageType10and20(msgType:str, msgBytes:bytearray) -> namedtuple:
     return fields
 
 
+def _parseCustomMessage101(msgBytes:bytearray) -> namedtuple:
+    """Vendor specific message type 101
+    Skyradar: GPS Time as a 12-byte or 21-byte message
+    SkyEcho: Ownship plus GPS information as a 29-byte message
+    """
+    assert msgBytes[0] == 101  # should never be called unless true
+
+    if len(msgBytes) in (12, 21):
+        return _parseSkyradarGpsTime(msgBytes)
+    elif len(msgBytes) == 29:
+        return _parseSkyEchoOwnship(msgBytes)
+    else:
+        return None
+
+
 def _parseSkyradarGpsTime(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 101 from Skyradar"""
-    assert len(msgBytes) == 12
+    assert len(msgBytes) in (12, 21)
     assert msgBytes[0] == 101
     msg = namedtuple('GpsTime', 'MsgType Hour Minute Waas')
     fields = ['GpsTime']
-    
-    fields.append(msgBytes[7]) # UTC hour
-    fields.append(msgBytes[8]) # UTC minute
+
+    # validate UTC time elements and return None if invalid
+    utcHour = msgBytes[7]
+    utcMinute = msgBytes[8]
+    if not (0 <= utcHour < 24) or not (0 <= utcMinute < 60):
+        return None
+
+    fields.append(utcHour)
+    fields.append(utcMinute)
 
     # GPS fix quality: 0=no fix, 1=regular, 2=waas
     waas = None
@@ -141,6 +162,11 @@ def _parseSkyradarGpsTime(msgBytes:bytearray) -> namedtuple:
     fields.append(waas)
     
     return msg._make(fields)
+
+
+def _parseSkyEchoOwnship(msgBytes:bytearray) -> namedtuple:
+    """GDL90 message type 101 from SkyEcho2 -- placeholder"""
+    return None
 
 
 def _unsigned24(data:bytearray, littleEndian:bool=False) -> int:
@@ -231,7 +257,7 @@ MessageIDMapping = {
     10  : _parseOwnshipReport,
     11  : _parseOwnshipGeometricAltitude,
     20  : _parseTrafficReport,
-    101 : _parseSkyradarGpsTime,
+    101 : _parseCustomMessage101,
 }
 
 
