@@ -4,9 +4,73 @@ Test GDL-90 message byte operation functions
 
 import unittest
 
-from gdl90.messages import _unsigned24, _signed24, _unsigned16, _signed16, _thunkByte
+from gdl90.messages import _unsigned32, _signed32, _unsigned24, _signed24, _unsigned16, _signed16, _thunkByte
 
 class ByteChecks(unittest.TestCase):
+
+    def test_unsigned32(self):
+        samples_bigEndian = [
+            ((0xFF, 0xFF, 0xFF, 0xFF), 0xFFFFFFFF),
+            ((0x00, 0x80, 0xF0, 0x80), 0x0080F080),
+            ((0x80, 0xF0, 0x00, 0x7F), 0x80F0007F) ,
+            ((0xF0, 0x00, 0x80, 0x00), 0xF0008000),
+        ]
+        samples_littleEndian = [
+            ((0xFF, 0xFF, 0xFF, 0xFF), 0xFFFFFFFF),
+            ((0x80, 0x00, 0x80, 0xF0), 0xF0800080),
+            ((0x80, 0xF0, 0x00, 0x7F), 0x7F00F080),
+            ((0xF0, 0x00, 0x80, 0x00), 0x008000F0),
+        ]
+
+        # Big endian tests
+        for (data, expected) in samples_bigEndian:
+            computed = _unsigned32(data, False)
+            msg="32-bit unsigned big endian decode error %06X != %06X" % (computed, expected)
+            self.assertEqual(computed, expected, msg=msg)
+        
+        # Little endian tests
+        for (data, expected) in samples_littleEndian:
+            computed = _unsigned32(data, True)
+            msg="32-bit unsigned little endian decode error %06X != %06X" % (computed, expected)
+            self.assertEqual(computed, expected, msg=msg)
+
+        # Input data without enough bytes raises AssertionError
+        self.assertRaises(AssertionError, _unsigned32, bytearray([0x01]))
+        self.assertRaises(AssertionError, _unsigned32, bytearray([0x01, 0x02]))
+        self.assertRaises(AssertionError, _unsigned32, bytearray([0x01, 0x02, 0x03]))
+
+
+    def test_signed32(self):
+        samples_bigEndian = [
+            ((0xFF, 0xFF, 0xFF, 0xFF), -1),
+            ((0x00, 0x80, 0xF0, 0x80),  0x0080F080),
+            ((0x80, 0xF0, 0x00, 0x7F), -0x7F0FFF81) ,
+            ((0xF0, 0x00, 0x80, 0x00), -0x0FFF8000),
+        ]
+        samples_littleEndian = [
+            ((0xFF, 0xFF, 0xFF, 0xFF), -1),
+            ((0x80, 0x00, 0x80, 0xF0), -0x0F7FFF80),
+            ((0x80, 0xF0, 0x00, 0x7F), 0x7F00F080),
+            ((0xF0, 0x00, 0x80, 0x00), 0x008000F0),
+        ]
+
+        # Big endian tests
+        for (data, expected) in samples_bigEndian:
+            computed = _signed32(data, False)
+            msg="32-bit signed big endian decode error %08X != %08X" % (computed, expected)
+            self.assertEqual(computed, expected, msg=msg)
+        
+        # Little endian tests
+        for (data, expected) in samples_littleEndian:
+            computed = _signed32(data, True)
+            msg="32-bit signed little endian decode error %08X != %08X" % (computed, expected)
+            self.assertEqual(computed, expected, msg=msg)
+
+        # Input data without enough bytes raises AssertionError
+        self.assertRaises(AssertionError, _signed32, bytearray([0x01]))
+        self.assertRaises(AssertionError, _signed32, bytearray([0x01, 0x02]))
+        self.assertRaises(AssertionError, _signed32, bytearray([0x01, 0x02, 0x03]))
+
 
     def test_unsigned24(self):
         samples_bigEndian = [
@@ -25,13 +89,13 @@ class ByteChecks(unittest.TestCase):
         # Big endian tests
         for (data, expected) in samples_bigEndian:
             computed = _unsigned24(data, False)
-            msg = "24-bit unsigned big endian decode error %06X != %06X" % (computed, expected)
+            msg = "24-bit unsigned big endian decode error %08X != %08X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
         
         # Little endian tests
         for (data, expected) in samples_littleEndian:
             computed = _unsigned24(data, True)
-            msg = "24-bit unsigned little endian decode error %06X != %06X" % (computed, expected)
+            msg = "24-bit unsigned little endian decode error %08X != %08X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
 
         # Input data without enough bytes raises AssertionError

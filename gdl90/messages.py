@@ -169,6 +169,31 @@ def _parseSkyEchoOwnship(msgBytes:bytearray) -> namedtuple:
     return None
 
 
+def _signed32(data:bytearray, littleEndian:bool=False) -> int:
+    """return a 32-bit signed integer with selectable Endian"""
+    val = _unsigned32(data, littleEndian)
+    if val > 0x7FFFFFFF:
+        val -= 0x100000000
+    return val
+
+
+def _unsigned32(data:bytearray, littleEndian:bool=False) -> int:
+    """return a 32-bit unsigned integer with selectable Endian"""
+    assert len(data) >= 4
+    if littleEndian:
+        b0 = data[3]
+        b1 = data[2]
+        b2 = data[1]
+        b3 = data[0]
+    else:
+        b0 = data[0]
+        b1 = data[1]
+        b2 = data[2]
+        b3 = data[3]
+    val = (b0 << 24) + (b1 << 16) + (b2 << 8) + b3
+    return val
+
+
 def _unsigned24(data:bytearray, littleEndian:bool=False) -> int:
     """return a 24-bit unsigned integer with selectable Endian"""
     assert len(data) >= 3
