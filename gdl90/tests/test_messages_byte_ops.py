@@ -4,7 +4,7 @@ Test GDL-90 message byte operation functions
 
 import unittest
 
-from gdl90.messages import _unsigned32, _signed32, _unsigned24, _signed24, _unsigned16, _signed16, _thunkByte
+from gdl90.messages import _unsigned32, _signed32, _unsigned24, _signed24, _unsigned16, _signed16, _thunkByte, _asciiText, _ALPHANUM_UPPER
 
 class ByteChecks(unittest.TestCase):
 
@@ -24,13 +24,13 @@ class ByteChecks(unittest.TestCase):
 
         # Big endian tests
         for (data, expected) in samples_bigEndian:
-            computed = _unsigned32(data, False)
+            computed = _unsigned32(bytearray(data), False)
             msg="32-bit unsigned big endian decode error %06X != %06X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
         
         # Little endian tests
         for (data, expected) in samples_littleEndian:
-            computed = _unsigned32(data, True)
+            computed = _unsigned32(bytearray(data), True)
             msg="32-bit unsigned little endian decode error %06X != %06X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
 
@@ -56,13 +56,13 @@ class ByteChecks(unittest.TestCase):
 
         # Big endian tests
         for (data, expected) in samples_bigEndian:
-            computed = _signed32(data, False)
+            computed = _signed32(bytearray(data), False)
             msg="32-bit signed big endian decode error %08X != %08X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
         
         # Little endian tests
         for (data, expected) in samples_littleEndian:
-            computed = _signed32(data, True)
+            computed = _signed32(bytearray(data), True)
             msg="32-bit signed little endian decode error %08X != %08X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
 
@@ -88,13 +88,13 @@ class ByteChecks(unittest.TestCase):
 
         # Big endian tests
         for (data, expected) in samples_bigEndian:
-            computed = _unsigned24(data, False)
+            computed = _unsigned24(bytearray(data), False)
             msg = "24-bit unsigned big endian decode error %08X != %08X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
         
         # Little endian tests
         for (data, expected) in samples_littleEndian:
-            computed = _unsigned24(data, True)
+            computed = _unsigned24(bytearray(data), True)
             msg = "24-bit unsigned little endian decode error %08X != %08X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
 
@@ -119,13 +119,13 @@ class ByteChecks(unittest.TestCase):
 
         # Big endian tests
         for (data, expected) in samples_bigEndian:
-            computed = _signed24(data, False)
+            computed = _signed24(bytearray(data), False)
             msg="24-bit signed big endian decode error %06X != %06X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
         
         # Little endian tests
         for (data, expected) in samples_littleEndian:
-            computed = _signed24(data, True)
+            computed = _signed24(bytearray(data), True)
             msg="24-bit signed little endian decode error %06X != %06X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
 
@@ -148,13 +148,13 @@ class ByteChecks(unittest.TestCase):
 
         # Big endian tests
         for (data, expected) in samples_bigEndian:
-            computed = _unsigned16(data, False)
+            computed = _unsigned16(bytearray(data), False)
             msg = "16-bit unsigned big endian decode error %04X != %04X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
         
         # Little endian tests
         for (data, expected) in samples_littleEndian:
-            computed = _unsigned16(data, True)
+            computed = _unsigned16(bytearray(data), True)
             msg = "16-bit unsigned little endian decode error %04X != %04X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
 
@@ -176,13 +176,13 @@ class ByteChecks(unittest.TestCase):
 
         # Big endian tests
         for (data, expected) in samples_bigEndian:
-            computed = _signed16(data, False)
+            computed = _signed16(bytearray(data), False)
             msg = "16-bit signed big endian decode error %04X != %04X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
         
         # Little endian tests
         for (data, expected) in samples_littleEndian:
-            computed = _signed16(data, True)
+            computed = _signed16(bytearray(data), True)
             msg = "16-bit signed little endian decode error %04X != %04X" % (computed, expected)
             self.assertEqual(computed, expected, msg=msg)
 
@@ -207,3 +207,21 @@ class ByteChecks(unittest.TestCase):
 
         # Illegal input larger than 8-bit raises ValueError exception
         self.assertRaises(ValueError, _thunkByte, 0x101, 0x0f, 0)
+
+    
+    def test_asciiText(self):
+        
+        # samples are: inputBytes, filter, default|None, expectedResult
+        samples = [
+            (b"Hello, W0rld!", _ALPHANUM_UPPER, None, "HW0"),
+            (b"hello again", _ALPHANUM_UPPER, None, ""),
+            (b"\x00\x01\x02", _ALPHANUM_UPPER, "x", "x"),
+            (b"\x00\x01\x02", _ALPHANUM_UPPER, None, ""),
+        ]
+        for (data, filter, default, expected) in samples:
+            args = [bytearray(data), filter]
+            if default is not None: args.append(default)
+
+            computed = _asciiText(*args)
+            msg = "ASCII text decode error: computed=%s is not expected=%s" % (computed, expected)
+            self.assertEqual(computed, expected, msg=msg)
