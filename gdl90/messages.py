@@ -4,7 +4,13 @@
 
 """GDL messages; these are only the output messages"""
 
+import string
 from collections import namedtuple
+
+
+# ASCII text decode filter(s) used by _asciiText()
+_ALPHANUM_UPPER = frozenset(string.ascii_uppercase) | frozenset(string.digits)
+
 
 def _parseHeartbeat(msgBytes:bytearray) -> namedtuple:
     """GDL90 message type 0"""
@@ -112,10 +118,8 @@ def _parseMessageType10and20(msgType:str, msgBytes:bytearray) -> namedtuple:
     
     fields.append(msgBytes[18]) ;# emitter category
 
-    # call sign; if blank, change to "-"
-    callsign = str(msgBytes[19:27]).rstrip()  # call sign
-    if callsign == "": callsign ="-"
-    fields.append(callsign)
+    # call sign, 8-bytes of text; if blank, change to "-"
+    fields.append(_asciiText(msgBytes[19:27], _ALPHANUM_UPPER, "-"))
 
     fields.append(_thunkByte(msgBytes[27], 0xf0, -4))  # emergency/priority code
     
@@ -274,6 +278,19 @@ def _thunkByte(byte:int, mask:int=0xff, shift:int=0) -> int:
     elif shift > 0:
         val = val << shift
     return val
+
+
+def _asciiText(data:bytearray, filter:frozenset, default:str = '') -> str:
+    """returns a string of filtered ASCII text
+    Args:
+        data: bytearray containing ASCII text
+        filter (frozenset): A set of allowed ASCII characters.
+        default: string to return if no valid chars found; this may use chars outside the filter
+    """
+    text = ''.join(chr(b) for b in data if chr(b) in filter)
+    if len(text) == 0:
+        return default
+    return text
 
 
 MessageIDMapping = {
