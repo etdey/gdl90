@@ -6,18 +6,25 @@
 
 import string
 from collections import namedtuple
+from typing import Any, Protocol, runtime_checkable
 
 
 # ASCII text decode filter(s) used by _asciiText()
 _ALPHANUM_UPPER = frozenset(string.ascii_uppercase) | frozenset(string.digits)
 
 
-def _parseHeartbeat(msgBytes:bytearray) -> namedtuple:
+@runtime_checkable
+class GDLMessage(Protocol):
+    """Protocol for all GDL90 message objects; sparsely defined at this time"""
+    MsgType: str
+
+
+def _parseHeartbeat(msgBytes:bytearray) -> GDLMessage:
     """GDL90 message type 0"""
     assert len(msgBytes) == 7
     assert msgBytes[0] == 0
     msg = namedtuple('Heartbeat', 'MsgType StatusByte1 StatusByte2 TimeStamp MessageCounts')
-    fields = ['Heartbeat']
+    fields: list[Any] = ['Heartbeat']
     
     fields.append(msgBytes[1])
     statusByte2 = msgBytes[2]
@@ -35,12 +42,12 @@ def _parseHeartbeat(msgBytes:bytearray) -> namedtuple:
     return msg._make(fields)
 
 
-def _parseUplinkData(msgBytes:bytearray) -> namedtuple:
+def _parseUplinkData(msgBytes:bytearray) -> GDLMessage:
     """GDL90 message type 7"""
     assert len(msgBytes) == 436
     assert msgBytes[0] == 7
     msg = namedtuple('UplinkData', 'MsgType TimeOfReception Header Data')
-    fields = ['UplinkData']
+    fields: list[Any] = ['UplinkData']
     
     fields.append(_unsigned24(msgBytes[1:4], littleEndian=True))
     fields.append(msgBytes[4:12]) ;# UAT header
@@ -49,7 +56,7 @@ def _parseUplinkData(msgBytes:bytearray) -> namedtuple:
     return msg._make(fields)
 
 
-def _parseOwnshipReport(msgBytes:bytearray) -> namedtuple:
+def _parseOwnshipReport(msgBytes:bytearray) -> GDLMessage:
     """GDL90 message type 10"""
     assert len(msgBytes) == 28
     assert msgBytes[0] == 10
@@ -57,12 +64,12 @@ def _parseOwnshipReport(msgBytes:bytearray) -> namedtuple:
     return msg._make(_parseMessageType10and20('OwnshipReport', msgBytes))
 
 
-def _parseOwnshipGeometricAltitude(msgBytes:bytearray) -> namedtuple:
+def _parseOwnshipGeometricAltitude(msgBytes:bytearray) -> GDLMessage:
     """GDL90 message type 11"""
     assert len(msgBytes) == 5
     assert msgBytes[0] == 11
     msg = namedtuple('OwnshipGeometricAltitude', 'MsgType Altitude VerticalMetrics')
-    fields = ['OwnshipGeometricAltitude']
+    fields: list[Any] = ['OwnshipGeometricAltitude']
     
     fields.append(_signed16(msgBytes[1:]) * 5) ;# height in 5 ft increments
     fields.append((msgBytes[3] << 8) + msgBytes[4])
@@ -70,7 +77,7 @@ def _parseOwnshipGeometricAltitude(msgBytes:bytearray) -> namedtuple:
     return msg._make(fields)
 
 
-def _parseTrafficReport(msgBytes:bytearray) -> namedtuple:
+def _parseTrafficReport(msgBytes:bytearray) -> GDLMessage:
     """GDL90 message type 20"""
     assert len(msgBytes) == 28
     assert msgBytes[0] == 20
@@ -78,9 +85,9 @@ def _parseTrafficReport(msgBytes:bytearray) -> namedtuple:
     return msg._make(_parseMessageType10and20('TrafficReport', msgBytes))
 
 
-def _parseMessageType10and20(msgType:str, msgBytes:bytearray) -> namedtuple:
+def _parseMessageType10and20(msgType:str, msgBytes:bytearray) -> list[Any]:
     """parse the fields for ownship and traffic reports"""
-    fields = [msgType]
+    fields: list[Any] = [msgType]
     
     fields.append(_thunkByte(msgBytes[1], 0x0b11110000, -4)) ;# status
     fields.append(_thunkByte(msgBytes[1], 0b00001111)) ;# type
@@ -126,7 +133,7 @@ def _parseMessageType10and20(msgType:str, msgBytes:bytearray) -> namedtuple:
     return fields
 
 
-def _parseCustomMessage101(msgBytes:bytearray) -> namedtuple:
+def _parseCustomMessage101(msgBytes:bytearray) -> GDLMessage | None:
     """Vendor specific message type 101
     Skyradar: GPS Time as a 12-byte or 21-byte message
     SkyEcho: Ownship plus GPS information as a 29-byte message
@@ -141,12 +148,12 @@ def _parseCustomMessage101(msgBytes:bytearray) -> namedtuple:
         return None
 
 
-def _parseSkyradarGpsTime(msgBytes:bytearray) -> namedtuple:
+def _parseSkyradarGpsTime(msgBytes:bytearray) -> GDLMessage | None:
     """GDL90 message type 101 from Skyradar"""
     assert len(msgBytes) in (12, 21)
     assert msgBytes[0] == 101
     msg = namedtuple('GpsTime', 'MsgType Hour Minute Waas')
-    fields = ['GpsTime']
+    fields: list[Any] = ['GpsTime']
 
     # validate UTC time elements and return None if invalid
     utcHour = msgBytes[7]
@@ -168,7 +175,7 @@ def _parseSkyradarGpsTime(msgBytes:bytearray) -> namedtuple:
     return msg._make(fields)
 
 
-def _parseSkyEchoOwnship(msgBytes:bytearray) -> namedtuple:
+def _parseSkyEchoOwnship(msgBytes:bytearray) -> GDLMessage | None:
     """GDL90 message type 101 from SkyEcho2 -- placeholder"""
     return None
 
@@ -303,7 +310,7 @@ MessageIDMapping = {
 }
 
 
-def messageToObject(data):
+def messageToObject(data) -> Any:
     """convert a raw message into an object"""
     if not len(data) > 0:
         return None
